@@ -1,28 +1,95 @@
 use core::borrow;
+use std::fmt::Binary;
 use std::{cell::RefCell, rc::Rc, borrow::BorrowMut};
 use std::ops::{Add, Sub};
 fn main() {
 
-    let p = Point::new('a',1);
-    let mut board:[[Option<Square>; 8]; 8] =[
+    let mut board:[[Square; 8]; 8] =[
         [
-            Some(Square::new(Some(Box::new(Queen{color:Color::Black,name:Type::King,point:p.clone()})),p.clone())),
-            None,None,None,None,None,None,None
+            Square::new(Some(Box::new(Rook{color:Color::Black,name:Type::Rook,point:Point::new('a',8)})),Point::new('a',8)),
+            Square::new(Some(Box::new(Knight{color:Color::Black,name:Type::Knight,point:Point::new('b',8)})),Point::new('b',8)),
+            Square::new(Some(Box::new(Bishop{color:Color::Black,name:Type::Bishop,point:Point::new('c',8)})),Point::new('c',8)),
+            Square::new(Some(Box::new(King{color:Color::Black,name:Type::King,point:Point::new('d',8)})),Point::new('d',8)),
+            Square::new(Some(Box::new(Queen{color:Color::Black,name:Type::Queen,point:Point::new('e',8)})),Point::new('e',8)),
+            Square::new(Some(Box::new(Bishop{color:Color::Black,name:Type::Bishop,point:Point::new('f',8)})),Point::new('f',8)),
+            Square::new(Some(Box::new(Knight{color:Color::Black,name:Type::Knight,point:Point::new('g',8)})),Point::new('g',8)),
+            Square::new(Some(Box::new(Rook{color:Color::Black,name:Type::Rook,point:Point::new('h',8)})),Point::new('h',8)),
         ],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
-        [None,None,None,None,None,None,None,None],
+        [
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('a',7)})),Point::new('a',7)),
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('b',7)})),Point::new('b',7)),
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('c',7)})),Point::new('c',7)),
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('d',7)})),Point::new('d',7)),
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('e',7)})),Point::new('e',7)),
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('f',7)})),Point::new('f',7)),
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('g',7)})),Point::new('g',7)),
+            Square::new(Some(Box::new(Pawn{color:Color::Black,name:Type::Pawn,point:Point::new('h',7)})),Point::new('h',7)),
+        ],
+        [
+            Square::new(None,Point::new('a',6)),
+            Square::new(None,Point::new('b',6)),
+            Square::new(None,Point::new('c',6)),
+            Square::new(None,Point::new('d',6)),
+            Square::new(None,Point::new('e',6)),
+            Square::new(None,Point::new('f',6)),
+            Square::new(None,Point::new('g',6)),
+            Square::new(None,Point::new('h',6)),
+        ],
+        [
+            Square::new(None,Point::new('a',5)),
+            Square::new(None,Point::new('b',5)),
+            Square::new(None,Point::new('c',5)),
+            Square::new(None,Point::new('d',5)),
+            Square::new(None,Point::new('e',5)),
+            Square::new(None,Point::new('f',5)),
+            Square::new(None,Point::new('g',5)),
+            Square::new(None,Point::new('h',5)),
+        ],
+        [
+            Square::new(None,Point::new('a',4)),
+            Square::new(None,Point::new('b',4)),
+            Square::new(None,Point::new('c',4)),
+            Square::new(None,Point::new('d',4)),
+            Square::new(None,Point::new('e',4)),
+            Square::new(None,Point::new('f',4)),
+            Square::new(None,Point::new('g',4)),
+            Square::new(None,Point::new('h',4)),
+        ],
+        [
+            Square::new(None,Point::new('a',3)),
+            Square::new(None,Point::new('b',3)),
+            Square::new(None,Point::new('c',3)),
+            Square::new(None,Point::new('d',3)),
+            Square::new(None,Point::new('e',3)),
+            Square::new(None,Point::new('f',3)),
+            Square::new(None,Point::new('g',3)),
+            Square::new(None,Point::new('h',3)),
+        ],
+        [
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('a',2)})),Point::new('a',2)),
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('b',2)})),Point::new('b',2)),
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('c',2)})),Point::new('c',2)),
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('d',2)})),Point::new('d',2)),
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('e',2)})),Point::new('e',2)),
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('f',2)})),Point::new('f',2)),
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('g',2)})),Point::new('g',2)),
+            Square::new(Some(Box::new(Pawn{color:Color::White,name:Type::Pawn,point:Point::new('h',2)})),Point::new('h',2)),
+        ],
+        [
+            Square::new(Some(Box::new(Rook{color:Color::White,name:Type::Rook,point:Point::new('a',1)})),Point::new('a',1)),
+            Square::new(Some(Box::new(Knight{color:Color::White,name:Type::Knight,point:Point::new('b',1)})),Point::new('b',1)),
+            Square::new(Some(Box::new(Bishop{color:Color::White,name:Type::Bishop,point:Point::new('c',1)})),Point::new('c',1)),
+            Square::new(Some(Box::new(King{color:Color::White,name:Type::King,point:Point::new('d',1)})),Point::new('d',1)),
+            Square::new(Some(Box::new(Queen{color:Color::White,name:Type::Queen,point:Point::new('e',1)})),Point::new('e',1)),
+            Square::new(Some(Box::new(Bishop{color:Color::White,name:Type::Bishop,point:Point::new('f',1)})),Point::new('f',1)),
+            Square::new(Some(Box::new(Knight{color:Color::White,name:Type::Knight,point:Point::new('g',1)})),Point::new('g',1)),
+            Square::new(Some(Box::new(Rook{color:Color::White,name:Type::Rook,point:Point::new('h',1)})),Point::new('h',1)),
+        ],
 
     ];
-    for n in &mut board{
-        let con = n[0].take();
-        let pi =con.unwrap().piece;
-        println!("{:?}",pi.unwrap().moves());
-    }
+
+    let mut manager = ChessManager::new(board);
+    manager.start();
 
 
 }
@@ -44,11 +111,14 @@ enum Type{
 #[derive(Clone,Debug)]
 struct Point{
     file:char,
-    rank:u32,
+    rank:u32
 }
 impl Point{
     fn new(file:char,rank:u32)->Point{
         Point{ file,rank }
+    }
+    fn notation(&self)->String{
+        format!("{}{}",self.file,self.rank)
     }
 }
 
@@ -61,15 +131,81 @@ impl Square{
         Square { piece, point }
     }
 }
+struct Player{
+
+}
+impl Player{
+    fn select_piece(&self)->String{
+        let mut guess = String::new();
+        std::io::stdin().read_line(&mut guess).expect("failed to readline");
+        guess
+    }
+    fn move_piece(&self,input:&str){
+        
+    }
+}
 
 
 
 struct ChessManager{
     board:[[Square; 8]; 8],
-    piece:Vec<Box<dyn Piece>>
+    isRunning:bool,
+    player1:Player,
+    player2:Player
 }
 impl ChessManager{
+    fn new(board:[[Square; 8]; 8])->ChessManager{
+        ChessManager{
+            board,
+            isRunning:false,
+            player1:Player{},
+            player2:Player{}
+        }
+    }
+    fn start(&mut self){
+        self.isRunning = true;
+        while self.isRunning{
+            let select = self.player1.select_piece();
+            let mut selected_square:Option<Box<dyn Piece>> =None;
+            self.player1.move_piece(&select);
+            for row in self.board.iter_mut(){
+                for square in row.iter_mut(){
+                    if select.trim()==square.point.notation(){
+                        if square.piece.is_some(){
+                            
+                            let hmm = square.piece.take().unwrap();
+                            selected_square = Some(hmm);
+                            println!("{:?}",selected_square.as_ref().unwrap().get_type());
+                        }
+                    }
+                }
+            }
 
+            println!("your target");
+            let mut target= String::new();
+            std::io::stdin().read_line(&mut target).expect("failed to readline");
+
+            for row in self.board.iter_mut(){
+                for square in row.iter_mut(){
+                    if target.trim()==square.point.notation(){
+                        if square.piece.is_none(){
+                            square.piece = selected_square.take();
+                            println!("{:?}",square.piece.as_ref().unwrap().get_type());
+                        }else {
+                            //square.piece.replace(selected_square.unwrap());
+                            square.piece = selected_square.take();
+                            println!("{:?}",square.piece.as_ref().unwrap().get_type());
+                        }
+                    }
+                }
+            }
+
+
+        }
+    }
+    fn stop(&mut self){
+        self.isRunning = false;
+    }
 }
 
 
@@ -251,29 +387,173 @@ impl Piece for Queen{
 
     }
 }
-// struct Rook{
+struct Rook{
+color:Color,
+    name:Type,
+    point:Point
+}
+impl Piece for Rook{
+    fn get_color(&self)->Color {
+        self.color.clone()
+    }
 
-// }
-// impl Piece for Rook{
-    
-// }
-// struct Bishop{
+    fn get_type(&self)->Type {
+        self.name.clone()
+    }
 
-// }
-// impl Piece for Bishop{
-    
-// }
-// struct Knight{
+    fn moves(&self)->Vec<Point> {
+        let mut vec:Vec<Point>=vec![];
 
-// }
-// impl Piece for Knight{
-    
-// }
-// struct Pawn{
+        let mut next = self.right(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next=self.right(point.file,point.rank);
+        }
+        next = self.top(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next = self.top(point.file,point.rank);
+        }
+        next = self.left(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next = self.left(point.file,point.rank);
+        }
+        next = self.bottom(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next = self.bottom(point.file,point.rank);
+        }
+        vec
+    }
+}
+struct Bishop{
+color:Color,
+    name:Type,
+    point:Point
+}
+impl Piece for Bishop{
+    fn get_color(&self)->Color {
+        self.color.clone()
+    }
 
-// }
-// impl Piece for Pawn{
-    
-// }
+    fn get_type(&self)->Type {
+        self.name.clone()
+    }
+
+    fn moves(&self)->Vec<Point> {
+        let mut vec:Vec<Point>=vec![];
+        let mut next = self.top_right(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next=self.top_right(point.file,point.rank);
+        }
+        next=self.top_left(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next=self.top_left(point.file,point.rank);
+        }
+        next=self.bottom_left(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next=self.bottom_left(point.file,point.rank);
+        }
+        next=self.bottom_right(self.point.file, self.point.rank);
+        while let Some(point) = next{
+            vec.push(point.clone());
+            next=self.bottom_right(point.file,point.rank);
+        }
+        vec
+    }
+}
+struct Knight{
+color:Color,
+    name:Type,
+    point:Point
+}
+impl Piece for Knight{
+    fn get_color(&self)->Color {
+        self.color.clone()
+    }
+
+    fn get_type(&self)->Type {
+        self.name.clone()
+    }
+
+    fn moves(&self)->Vec<Point> {
+        let mut vec:Vec<Point>=vec![];
+        let mut next = self.top(self.point.file, self.point.rank);
+
+        if let Some(point) = next{
+            next=self.top_left(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+            next=self.top_right(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+        }
+
+        next = self.right(self.point.file, self.point.rank);
+
+        if let Some(point) = next{
+            next=self.top_right(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+            next=self.bottom_right(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+        }
+
+        next = self.bottom(self.point.file, self.point.rank);
+
+        if let Some(point) = next{
+            next=self.bottom_left(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+            next=self.bottom_right(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+        }
+
+        next = self.left(self.point.file, self.point.rank);
+
+        if let Some(point) = next{
+            next=self.top_left(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+            next=self.bottom_left(point.file,point.rank);
+            if let Some(p)=next{
+                vec.push(p);
+            }
+        }
+        
+        vec
+    }
+}
+struct Pawn{
+color:Color,
+    name:Type,
+    point:Point
+}
+impl Piece for Pawn{
+    fn get_color(&self)->Color {
+        self.color.clone()
+    }
+
+    fn get_type(&self)->Type {
+        self.name.clone()
+    }
+
+    fn moves(&self)->Vec<Point> {
+        vec![]
+    }
+}
 
 
