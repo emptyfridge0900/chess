@@ -26,3 +26,4 @@
 https://www.chess.com/terms/chessboard 
 https://www.chess.com/terms/chess-pieces 
 https://www.chess.com/terms/chess-pawn 
+https://www.chess.com/article/view/chess-notation 
