@@ -108,6 +108,7 @@ impl Player{
     }
     fn captures(&self,a:Point,b:Point){
         let mut p : Option<Box<dyn Piece>> =None;
+
         for row in self.board.iter(){
             for square in row{
 
@@ -175,13 +176,12 @@ impl Player{
     fn turn(&self){
 
         let (selected_props,target_props)=self.select();
-        
 
         if selected_props.is_some() && target_props.is_some(){
             let p = selected_props.as_ref().unwrap();
             let q = target_props.as_ref().unwrap();
+
             if p.color==self.color && q.color!=self.color{
-                println!("let's capture");
                 self.captures(p.point, q.point);
             }
         } else if selected_props.is_some() {
@@ -224,12 +224,33 @@ impl ChessManager{
     }
     fn start(&mut self){
         self.isRunning = true;
+        self.draw_board();
         while self.isRunning{
             self.player1.turn();
+            self.draw_board();
+            self.player2.turn();
+            self.draw_board();
 
         }
     }
     fn stop(&mut self){
         self.isRunning = false;
+    }
+
+    fn draw_board(&self){
+        for row in self.board.iter(){
+            for square in row{
+                let piece= square.piece.borrow();
+
+                if piece.as_ref().is_some(){
+                    let props = piece.as_ref().unwrap().get_props();
+                    print!(" {} ",props.get_name());
+                } else{
+                    print!(" {} ",' ');
+                }
+            }
+            println!();
+        }
+
     }
 }
