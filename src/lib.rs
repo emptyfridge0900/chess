@@ -1,5 +1,7 @@
 pub mod error;
 pub mod piece;
+pub mod player;
+pub mod board;
 
 use std::cell::RefCell;
 use piece::Piece;
