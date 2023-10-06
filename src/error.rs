@@ -2,15 +2,15 @@ use std::fmt;
 use std::error::Error;
 
 #[derive(Debug)]
-pub struct InvalidaInutError{
+pub struct InvalidateInutError{
 
 }
 
-impl fmt::Display for InvalidaInutError{
+impl fmt::Display for InvalidateInutError{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Test error")
     }
 }
-impl Error for InvalidaInutError{
+impl Error for InvalidateInutError{
 
 }
