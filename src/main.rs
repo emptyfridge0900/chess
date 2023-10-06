@@ -1,10 +1,10 @@
-use core::borrow;
-use std::fmt::Binary;
-use std::{cell::RefCell, rc::Rc, borrow::BorrowMut};
-use std::ops::{Add, Sub};
+use std::{cell::RefCell, rc::Rc};
+
+use chess::{Type, Square, Color, Point, Props, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}};
+
 fn main() {
 
-    let mut board:Rc<RefCell<[[Square; 8]; 8]>> =Rc::new(RefCell::new([
+    let mut board:Rc<[[Square; 8]; 8]> =Rc::new([
         [
             Square::new(RefCell::new(Some(Box::new(Rook{color:Color::Black,name:Type::Rook,point:Point::new('a',8)}))),Point::new('a',8)),
             Square::new(RefCell::new(Some(Box::new(Knight{color:Color::Black,name:Type::Knight,point:Point::new('b',8)}))),Point::new('b',8)),
@@ -86,119 +86,146 @@ fn main() {
             Square::new(RefCell::new(Some(Box::new(Rook{color:Color::White,name:Type::Rook,point:Point::new('h',1)}))),Point::new('h',1)),
         ],
 
-    ]));
+    ]);
 
-        let mut manager = ChessManager::new(Rc::clone(&board));
+    let mut manager = ChessManager::new(board);
     manager.start();
 
 
 }
 
-#[derive(Clone,Debug)]
-enum Color {
-    White,
-    Black
-}
-#[derive(Clone,Debug)]
-enum Type{
-    King,
-    Queen,
-    Rook,
-    Bishop,
-    Knight,
-    Pawn
-}
-#[derive(Clone,Debug)]
-struct Point{
-    file:char,
-    rank:u32
-}
-impl Point{
-    fn new(file:char,rank:u32)->Point{
-        Point{ file,rank }
-    }
-    fn notation(&self)->String{
-        format!("{}{}",self.file,self.rank)
-    }
-}
 
-struct Square{
-    piece:RefCell<Option<Box<dyn Piece>>>,
-    point:Point
-}
-impl Square{
-    fn new(piece:RefCell<Option<Box<dyn Piece>>>,point:Point)->Square{
-        Square { piece, point }
-    }
-}
+
 struct Player{
-
+    board:Rc<[[Square; 8]; 8]>,
+    color:Color
 }
+
 impl Player{
-    fn select_piece(&self)->String{
-        let mut guess = String::new();
-        std::io::stdin().read_line(&mut guess).expect("failed to readline");
-        guess
-    }
-    fn move_piece(&self,input:&str){
+
+    fn move_piece(&self){
         
     }
+    fn captures(&self,a:Point,b:Point){
+        let mut p : Option<Box<dyn Piece>> =None;
+        for row in self.board.iter(){
+            for square in row{
+
+                if a.notation()==square.point.notation(){
+                    if square.piece.borrow().is_some(){
+                        p = square.piece.take();
+                        let prop=p.as_ref().unwrap().get_props();
+                        println!("{:?} {:?}",prop.color,prop.name);
+                    }
+                }
+            }
+        }
+
+        for row in self.board.iter(){
+            for square in row{
+                if b.notation()==square.point.notation(){
+                    if square.piece.borrow().is_some(){
+                        let mut x = p.take().unwrap();
+                        x.set_point(b);
+                        square.piece.replace(Some(x));
+                    }
+                }
+
+            }
+        }
+
+    }
+
+
+    fn select(&self)->(Option<Props>,Option<Props>){
+        println!("Select piece");
+        let mut select = String::new();
+        std::io::stdin().read_line(&mut select).expect("failed to readline");
+
+        println!("Destination");
+        let mut target= String::new();
+        std::io::stdin().read_line(&mut target).expect("failed to readline");
+
+        let mut selected_props:Option<Props> =None;
+        let mut target_props:Option<Props> = None;
+        for row in self.board.iter(){
+            for square in row{
+
+                if select.trim()==square.point.notation(){
+                    if square.piece.borrow().is_some(){
+                        selected_props = Some(square.piece.borrow().as_ref().unwrap().get_props());
+
+                    } else {
+                        selected_props = None;
+                    }
+                }
+                if target.trim()==square.point.notation(){
+                    if square.piece.borrow().is_some(){
+                        target_props = Some(square.piece.borrow().as_ref().unwrap().get_props());
+                    } else {
+                        target_props = None;
+                    }
+                }
+            }
+        }
+        (selected_props,target_props)
+    }
+
+
+    fn turn(&self){
+
+        let (selected_props,target_props)=self.select();
+        
+
+        if selected_props.is_some() && target_props.is_some(){
+            let p = selected_props.as_ref().unwrap();
+            let q = target_props.as_ref().unwrap();
+            if p.color==self.color && q.color!=self.color{
+                println!("let's capture");
+                self.captures(p.point, q.point);
+            }
+        } else if selected_props.is_some() {
+
+        } else {
+
+        }
+        // for row in self.board.iter(){
+        //     for square in row{
+        //         if target.trim()==square.point.notation(){
+        //             if square.piece.borrow().is_none(){
+        //                 *square.piece.borrow_mut() = selected_piece.take();
+        //                 println!("{:?}",square.piece.borrow().as_ref().unwrap().get_props().color);
+        //             }else {
+        //                 //square.piece.replace(selected_square.unwrap());
+        //                 *square.piece.borrow_mut() = selected_piece.take();
+        //                 println!("{:?}",square.piece.borrow().as_ref().unwrap().get_props().name);
+        //             }
+        //         }
+        //     }
+        // }
+
+    }
 }
 
-
-
 struct ChessManager{
-    board:Rc<RefCell<[[Square; 8]; 8]>>,
+    board:Rc<[[Square; 8]; 8]>,
     isRunning:bool,
     player1:Player,
     player2:Player
 }
 impl ChessManager{
-    fn new(board:Rc<RefCell<[[Square; 8]; 8]>>)->ChessManager{
+    fn new(board:Rc<[[Square; 8]; 8]>)->ChessManager{
         ChessManager{
-            board,
+            board:Rc::clone(&board),
             isRunning:false,
-            player1:Player{},
-            player2:Player{}
+            player1:Player{board:Rc::clone(&board),color:Color::White},
+            player2:Player{board:Rc::clone(&board),color:Color::Black}
         }
     }
     fn start(&mut self){
         self.isRunning = true;
         while self.isRunning{
-            let select = self.player1.select_piece();
-            let mut selected_square:Option<Box<dyn Piece>> =None;
-            for row in self.board.borrow().iter(){
-                for square in row{
-                    if select.trim()==square.point.notation(){
-                        if square.piece.borrow().is_some(){
-                            
-                            let hmm = square.piece.take().unwrap();
-                            selected_square = Some(hmm);
-                            println!("{:?}",selected_square.as_ref().unwrap().get_type());
-                        }
-                    }
-                }
-            }
-
-            println!("your target");
-            let mut target= String::new();
-            std::io::stdin().read_line(&mut target).expect("failed to readline");
-
-            for row in self.board.borrow().iter(){
-                for square in row{
-                    if target.trim()==square.point.notation(){
-                        if square.piece.borrow().is_none(){
-                            *square.piece.borrow_mut() = selected_square.take();
-                            println!("{:?}",square.piece.borrow().as_ref().unwrap().get_type());
-                        }else {
-                            //square.piece.replace(selected_square.unwrap());
-                            *square.piece.borrow_mut() = selected_square.take();
-                            println!("{:?}",square.piece.borrow().as_ref().unwrap().get_type());
-                        }
-                    }
-                }
-            }
-
+            self.player1.turn();
 
         }
     }
@@ -206,353 +233,3 @@ impl ChessManager{
         self.isRunning = false;
     }
 }
-
-
-trait Piece{
-    fn get_color(&self)->Color;
-    // fn set_board(&mut self,board:&Rc< [[Option<Box<dyn Piece>>; 8]; 8] >);
-    fn get_type(&self)->Type;
-    // fn available_move(&self)->Vec<Option<Point>>;
-    // fn can_move(&self,rank:char,file:u32)->bool;
-    // fn set_squre(&self,rank:char,file:u32);
-    // fn get_squre(&self)->String;
-    // fn attack(&self,piece: Box<dyn Piece>);
-    // fn can_attack(&self,piece: Box<dyn Piece>) -> bool;
-    fn moves(&self)->Vec<Point>;
-    fn surrounding_points(&self,file:char,rank:u32)->Vec<Option<Point>>{
-        vec![
-            self.top_left(file, rank),
-            self.top(file, rank),
-            self.top_right(file, rank),
-            self.left(file, rank),
-            self.right(file, rank),
-            self.bottom_left(file, rank),
-            self.bottom(file, rank),
-            self.bottom_right(file, rank),
-        ]
-    }
-    fn top_right(&self,file:char,rank:u32)->Option<Point>{
-        let right = (file as u8 +1) as char;
-        let top = rank + 1;
-        if right>='a' && right<='h' && top>=1 && top<=8{
-            return Some(Point::new(right, top));
-        }
-        None
-    }
-    fn top_left(&self,file:char,rank:u32)->Option<Point>{
-        let left = (file as u8 -1) as char;
-        let top = rank + 1;
-        if left>='a' && left<='h' && top>=1 && top<=8{
-            return Some(Point::new(left, top));
-        }
-        None
-    }
-    fn bottom_right(&self,file:char,rank:u32)->Option<Point>{
-        let right = (file as u8 +1) as char;
-        let bottom = rank-1;
-        if right>='a' && right<='h' && bottom>=1 && bottom<=8{
-            return Some(Point::new(right, bottom));
-        }
-        None
-    }
-    fn bottom_left(&self,file:char,rank:u32)->Option<Point>{
-        let left = (file as u8 -1) as char;
-        let bottom = rank-1;
-        if left>='a' && left<='h' && bottom>=1 && bottom<=8{
-            return Some(Point::new(left, bottom));
-        }
-        None
-    }
-    fn left(&self,file:char,rank:u32)->Option<Point>{
-        let left = (file as u8 -1) as char;
-        if left>='a' && left<='h'{
-            return Some(Point::new(left, rank));
-        }
-        None
-    }
-    fn right(&self,file:char,rank:u32)->Option<Point>{
-        let right = (file as u8 +1) as char;
-        if right>='a' && right<='h'{
-            return Some(Point::new(right, rank ));
-        }
-        None
-    }
-    fn top(&self,file:char,rank:u32)->Option<Point>{
-        let top = rank + 1;
-        if top>=1 && top<=8 {
-            return Some(Point::new(file,top));
-        }
-        None
-    }
-    fn bottom(&self,file:char,rank:u32)->Option<Point>{
-        let bottom = rank-1;
-        if bottom>=1 && bottom<=8{
-            return Some(Point::new(file,bottom));
-        }
-        None
-    }
-    
-}
-
-struct King{
-    color:Color,
-    name:Type,
-    point:Point
-
-}
-impl Piece for King{
-
-    fn get_color(&self)->Color {
-        self.color.clone()
-    }
-    fn get_type(&self)->Type {
-       self.name.clone()
-    }
-
-    // fn available_move(&self)->Vec<Option<Point>> {
-    //     self.surrounding_points(self.point.file, self.point.rank)
-    // }
-
-    fn moves(&self)->Vec<Point> {
-        self.surrounding_points(self.point.file, self.point.rank).iter()
-        .filter_map(|x|x.clone())
-        .collect()
-    }
-    
-}
-struct Queen{
-    color:Color,
-    name:Type,
-    point:Point
-}
-impl Piece for Queen{
-    fn get_color(&self)->Color {
-        self.color.clone()
-    }
-
-    fn get_type(&self)->Type {
-        self.name.clone()
-    }
-
-    // fn available_move(&self)->Vec<Option<Point>> {
-    //     todo!()
-    // }
-
-    fn moves(&self)->Vec<Point> {
-        let mut vec:Vec<Point>=vec![];
-
-        let mut next = self.right(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next=self.right(point.file,point.rank);
-        }
-        next = self.top_right(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.top_right(point.file,point.rank);
-        }
-        next = self.top(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.top(point.file,point.rank);
-        }
-        next = self.top_left(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.top_left(point.file,point.rank);
-        }
-        next = self.left(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.left(point.file,point.rank);
-        }
-        next = self.bottom_left(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.bottom_left(point.file,point.rank);
-        }
-        next = self.bottom(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.bottom(point.file,point.rank);
-        }
-        next = self.bottom_right(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.bottom_right(point.file,point.rank);
-        }
-
-        vec
-
-    }
-}
-struct Rook{
-color:Color,
-    name:Type,
-    point:Point
-}
-impl Piece for Rook{
-    fn get_color(&self)->Color {
-        self.color.clone()
-    }
-
-    fn get_type(&self)->Type {
-        self.name.clone()
-    }
-
-    fn moves(&self)->Vec<Point> {
-        let mut vec:Vec<Point>=vec![];
-
-        let mut next = self.right(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next=self.right(point.file,point.rank);
-        }
-        next = self.top(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.top(point.file,point.rank);
-        }
-        next = self.left(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.left(point.file,point.rank);
-        }
-        next = self.bottom(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.bottom(point.file,point.rank);
-        }
-        vec
-    }
-}
-struct Bishop{
-color:Color,
-    name:Type,
-    point:Point
-}
-impl Piece for Bishop{
-    fn get_color(&self)->Color {
-        self.color.clone()
-    }
-
-    fn get_type(&self)->Type {
-        self.name.clone()
-    }
-
-    fn moves(&self)->Vec<Point> {
-        let mut vec:Vec<Point>=vec![];
-        let mut next = self.top_right(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next=self.top_right(point.file,point.rank);
-        }
-        next=self.top_left(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next=self.top_left(point.file,point.rank);
-        }
-        next=self.bottom_left(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next=self.bottom_left(point.file,point.rank);
-        }
-        next=self.bottom_right(self.point.file, self.point.rank);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next=self.bottom_right(point.file,point.rank);
-        }
-        vec
-    }
-}
-struct Knight{
-color:Color,
-    name:Type,
-    point:Point
-}
-impl Piece for Knight{
-    fn get_color(&self)->Color {
-        self.color.clone()
-    }
-
-    fn get_type(&self)->Type {
-        self.name.clone()
-    }
-
-    fn moves(&self)->Vec<Point> {
-        let mut vec:Vec<Point>=vec![];
-        let mut next = self.top(self.point.file, self.point.rank);
-
-        if let Some(point) = next{
-            next=self.top_left(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-            next=self.top_right(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-        }
-
-        next = self.right(self.point.file, self.point.rank);
-
-        if let Some(point) = next{
-            next=self.top_right(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-            next=self.bottom_right(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-        }
-
-        next = self.bottom(self.point.file, self.point.rank);
-
-        if let Some(point) = next{
-            next=self.bottom_left(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-            next=self.bottom_right(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-        }
-
-        next = self.left(self.point.file, self.point.rank);
-
-        if let Some(point) = next{
-            next=self.top_left(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-            next=self.bottom_left(point.file,point.rank);
-            if let Some(p)=next{
-                vec.push(p);
-            }
-        }
-        
-        vec
-    }
-}
-struct Pawn{
-color:Color,
-    name:Type,
-    point:Point
-}
-impl Piece for Pawn{
-    fn get_color(&self)->Color {
-        self.color.clone()
-    }
-
-    fn get_type(&self)->Type {
-        self.name.clone()
-    }
-
-    fn moves(&self)->Vec<Point> {
-        vec![]
-    }
-}
-
-
