@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
-use chess::{Type, Square, Color, Point, Props, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}};
-
+use chess::{Type, Square, Color, Point, Props, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, error};
+use regex::Regex;
 fn main() {
 
     let mut board:Rc<[[Square; 8]; 8]> =Rc::new([
