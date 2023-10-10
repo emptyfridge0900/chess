@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc, borrow::BorrowMut};
+use std::{cell::{RefCell, Ref}, rc::Rc, borrow::BorrowMut};
 
 use chess::{Type, Square, Color, Point, Props, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, error, player::Player, board::Board};
 use regex::Regex;
@@ -50,9 +50,15 @@ impl ChessManager{
                 } else {
                     let mut piece = self.board.takes(square.point);
                     piece= self.board.replace(square2.point, piece);
+                    //promotion
+                    if self.is_promotion(square2){
+                        self.promotion(square2)
+                    }
+
+                    self.post_check(square,square2);
                 }
 
-                self.post_check(square,square2);
+                
 
             }
 
@@ -67,12 +73,35 @@ impl ChessManager{
         !self.is_blocked(square.point,square2.point)
     }
     fn post_check(&self,square:&Square,square2:&Square){
-        //pomotion
-
         //check
 
         //check mate
 
+    }
+    fn is_promotion(&self,square:&Square)->bool{
+        if square.piece.borrow().as_ref().unwrap().get_props().name==Type::Pawn{
+
+            if square.point.rank==8 && square.piece.borrow().as_ref().unwrap().get_props().color==Color::White{
+                return true;
+            }
+            if square.point.rank==1 && square.piece.borrow().as_ref().unwrap().get_props().color==Color::Black{
+                return true;
+            }
+        }
+        false
+    }
+    fn promotion(&self,square:&Square){
+        let color = square.piece.borrow().as_ref().unwrap().get_props().color;
+        let mut pick = String::new();
+        std::io::stdin().read_line(&mut pick).expect("failed to readline");
+        let piece:Option<Box<dyn Piece>> =match &*pick.trim(){
+            "queen"=>Some(Box::new(Queen::new(color,Type::Queen))),
+            "rook"=>Some(Box::new(Rook::new(color,Type::Rook))),
+            "bishop"=>Some(Box::new(Bishop::new(color,Type::Bishop))),
+            "knight"=>Some(Box::new(Knight::new(color,Type::Knight))),
+            _=>None
+        };
+        *square.piece.borrow_mut()=piece
     }
     fn is_en_passant(&self,square:&Square,square2:&Square)->bool{
         if square.piece.borrow().as_ref().is_some(){
