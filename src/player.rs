@@ -9,63 +9,42 @@ pub struct Player{
 
 impl Player{
 
-    fn move_piece(&self){
-        
-    }
-    fn captures(&self,a:Point,b:Point){
+    pub fn select(&self)->(&Square,&Square){
+        println!("{} player",self.color);
+        loop{
+            println!("Select piece");
+            let mut select = String::new();
+            std::io::stdin().read_line(&mut select).expect("failed to readline");
 
-        let piece = self.board.takes(a);
-        let test =self.board.replace(b, piece);
+            println!("Destination");
+            let mut target= String::new();
+            std::io::stdin().read_line(&mut target).expect("failed to readline");
 
-    }
-
-
-    fn select(&self)->(Option<Props>,Option<Props>){
-        println!("Select piece");
-        let mut select = String::new();
-        std::io::stdin().read_line(&mut select).expect("failed to readline");
-
-        println!("Destination");
-        let mut target= String::new();
-        std::io::stdin().read_line(&mut target).expect("failed to readline");
-
-        let mut selected_props:Option<Props> =self.board.get_prop(&select);
-        let mut target_props:Option<Props> = self.board.get_prop(&target);
-
-        (selected_props,target_props)
-    }
-
-
-    pub fn turn(&self){
-
-        let (selected_props,target_props)=self.select();
-
-        if selected_props.is_some() && target_props.is_some(){
-            let p = selected_props.as_ref().unwrap();
-            let q = target_props.as_ref().unwrap();
-
-            if p.color==self.color && q.color!=self.color{
-                self.captures(p.point, q.point);
-            }
-        } else if selected_props.is_some() {
-
-        } else {
-
+            let src_square =self.board.get_square(&select);
+            let des_square = self.board.get_square(&target);
+            println!("{:?}",src_square.as_ref().unwrap().point);
+            match (src_square,des_square){
+                (Ok(a), Ok(b))=>{
+                    if a.piece.borrow().is_some() && a.piece.borrow().as_ref().unwrap().get_props().color == self.color 
+                    {
+                        if b.piece.borrow().is_none() || b.piece.borrow().as_ref().unwrap().get_props().color != self.color{
+                            return (a,b);
+                        }else{
+                            println!("aaaa");
+                            println!("{} is not your piece",b.point.notation());
+                        }
+                    }else{
+                        println!("bbbb");
+                        println!("{:?}",a.piece.borrow().as_ref().is_some());
+                        println!("{} is not your piece",a.point.notation());
+                    }
+                    continue;
+                },
+                (Ok(_), Err(_))=> {println!("retrying"); continue;},
+                (Err(_), Ok(_)) => {println!("retrying"); continue;},
+                (Err(_), Err(_)) => {println!("retrying"); continue;},
+            };
         }
-        // for row in self.board.iter(){
-        //     for square in row{
-        //         if target.trim()==square.point.notation(){
-        //             if square.piece.borrow().is_none(){
-        //                 *square.piece.borrow_mut() = selected_piece.take();
-        //                 println!("{:?}",square.piece.borrow().as_ref().unwrap().get_props().color);
-        //             }else {
-        //                 //square.piece.replace(selected_square.unwrap());
-        //                 *square.piece.borrow_mut() = selected_piece.take();
-        //                 println!("{:?}",square.piece.borrow().as_ref().unwrap().get_props().name);
-        //             }
-        //         }
-        //     }
-        // }
-
     }
+
 }

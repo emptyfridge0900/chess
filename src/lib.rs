@@ -12,6 +12,11 @@ pub enum Color {
     White,
     Black
 }
+impl std::fmt::Display for Color{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}",self)
+    }
+}
 #[derive(Clone,Copy,Debug,PartialEq, Eq)]
 pub enum Type{
     King,
@@ -21,16 +26,11 @@ pub enum Type{
     Knight,
     Pawn
 }
-#[derive(Clone,Copy,Debug,PartialEq, Eq)]
-pub struct Point{
-    pub file:char,
-    pub rank:u32
-}
+
 
 pub struct Props{
     pub color:Color,
     pub name:Type,
-    pub point:Point
 }
 impl Props{
     pub fn get_name(&self)-> char{
@@ -45,11 +45,17 @@ impl Props{
             (Color::White,Type::Queen)=>'♕',
             (Color::White,Type::Rook)=>'♖',
             (Color::White,Type::Bishop)=>'♗',
-            (Color::White,Type::Knight)=>'♕',
+            (Color::White,Type::Knight)=>'♘',
             (Color::White,Type::Pawn)=>'♙',
             _=>unreachable!()
         }
     }
+}
+
+#[derive(Clone,Copy,Debug,PartialEq, Eq)]
+pub struct Point{
+    pub file:char,
+    pub rank:u32
 }
 
 impl Point{

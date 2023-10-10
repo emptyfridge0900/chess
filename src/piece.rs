@@ -1,17 +1,15 @@
 
+use std::cell::RefCell;
+
 use crate::{Type, Point, Props, Color};
 
 
 pub trait Piece{
     fn get_props(&self)->Props;
-    // fn available_move(&self)->Vec<Option<Point>>;
-    // fn can_move(&self,rank:char,file:u32)->bool;
-    // fn set_squre(&self,rank:char,file:u32);
-    // fn get_squre(&self)->String;
-    // fn attack(&self,piece: Box<dyn Piece>);
-    // fn can_attack(&self,piece: Box<dyn Piece>) -> bool;
-    
     fn moves(&self, point:Point)->Vec<Point>;
+    fn points_between(&self,point:Point,point2:Point)->Vec<Point>;
+    fn is_moved(&self)->bool;
+    fn moved(&self);
 
     fn surrounding_points(&self,point:Point)->Vec<Point>{
         vec![
@@ -269,19 +267,30 @@ pub trait Piece{
         }
         None
     }
-
     
 }
 
 pub struct King{
+    moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl King{
     pub fn new(color:Color,name:Type)->King{
         King{
+            moved:RefCell::new(false),
             color,
             name,
+        }
+    }
+}
+
+impl King{
+    fn side_x2(&self)->Vec<Point>{
+        if self.get_props().color==Color::White{
+            vec![Point::new('c',1),Point::new('g',1)]
+        }else{
+            vec![Point::new('c',8),Point::new('g',8)]
         }
     }
 }
@@ -294,24 +303,40 @@ impl Piece for King{
         }
     }
 
-
-    // fn available_move(&self)->Vec<Option<Point>> {
-    //     self.surrounding_points(self.point.file, self.point.rank)
-    // }
-
     fn moves(&self, point:Point)->Vec<Point> {
-        self.surrounding_points(point)
+        
+        let mut vec = self.surrounding_points(point);
+        if !*self.moved.borrow(){
+            vec.extend(self.side_x2());
+        }
+        vec
+    }
+
+    fn points_between(&self,point:Point,point2:Point) -> Vec<Point>{
+        vec![]
+    }
+
+    fn is_moved(&self)->bool {
+        *self.moved.borrow()
+    }
+
+    fn moved(&self) {
+        if !*self.moved.borrow(){
+            *self.moved.borrow_mut()=true;
+        }
     }
     
 }
 
 pub struct Queen{
+    moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Queen{
     pub fn new(color:Color,name:Type)->Queen{
         Queen{
+            moved:RefCell::new(false),
             color,
             name,
         }
@@ -332,7 +357,6 @@ impl Piece for Queen{
 
 
     fn moves(&self,point:Point)->Vec<Point> {
-        
         let mut vec = self.top_lefts(point);
         vec.extend(self.tops(point));
         vec.extend(self.top_rights(point));
@@ -342,15 +366,50 @@ impl Piece for Queen{
         vec.extend(self.bottoms(point));
         vec.extend(self.bottom_rights(point));
         vec
-}
+    }
+
+    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
+        let points = if self.tops(point).contains(&point2){
+            self.tops(point)
+        }else if self.top_lefts(point).contains(&point2){
+            self.top_lefts(point)
+        }else if self.top_rights(point).contains(&point2){
+            self.top_rights(point)
+        }else if self.rights(point).contains(&point2){
+            self.rights(point)
+        }else if self.bottom_rights(point).contains(&point2){
+            self.bottom_rights(point)
+        }else if self.bottoms(point).contains(&point2){
+            self.bottoms(point)
+        }else if self.bottom_lefts(point).contains(&point2){
+            self.bottom_lefts(point)
+        }else if self.lefts(point).contains(&point2){
+            self.lefts(point)
+        } else{
+            vec![]
+        };
+        points.into_iter().take_while(|x| x!=&point2).collect()
+    }
+
+    fn is_moved(&self)->bool {
+        *self.moved.borrow()
+    }
+    fn moved(&self) {
+        if !*self.moved.borrow(){
+            *self.moved.borrow_mut()=true;
+        }
+    }
+    
 }
 pub struct Rook{
+    moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Rook{
     pub fn new(color:Color,name:Type)->Rook{
         Rook{
+            moved:RefCell::new(false),
             color,
             name,
         }
@@ -372,16 +431,42 @@ impl Piece for Rook{
         vec
     }
 
+    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
+        let points = if self.tops(point).contains(&point2){
+            self.tops(point)
+        }else if self.rights(point).contains(&point2){
+            self.rights(point)
+        }else if self.bottoms(point).contains(&point2){
+            self.bottoms(point)
+        }else if self.lefts(point).contains(&point2){
+            self.lefts(point)
+        } else{
+            vec![]
+        };
+        points.into_iter().take_while(|x| x!=&point2).collect()
+    }
+
+    fn is_moved(&self)->bool {
+        *self.moved.borrow()
+    }
+    fn moved(&self) {
+        if !*self.moved.borrow(){
+            *self.moved.borrow_mut()=true;
+        }
+    }
+
 }
 
 
 pub struct Bishop{
+    moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Bishop{
     pub fn new(color:Color,name:Type)->Bishop{
         Bishop{
+            moved:RefCell::new(false),
             color,
             name,
         }
@@ -403,22 +488,46 @@ impl Piece for Bishop{
         vec.extend(self.bottom_rights(point));
         vec
     }
+
+    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
+        let points = if self.top_lefts(point).contains(&point2){
+            self.top_lefts(point)
+        }else if self.top_rights(point).contains(&point2){
+            self.top_rights(point)
+        }else if self.bottom_rights(point).contains(&point2){
+            self.bottom_rights(point)
+        }else if self.bottom_lefts(point).contains(&point2){
+            self.bottom_lefts(point)
+        }else{
+            vec![]
+        };
+        points.into_iter().take_while(|x| x!=&point2).collect()
+    }
+
+    fn is_moved(&self)->bool {
+        *self.moved.borrow()
+    }
+    fn moved(&self) {
+        if !*self.moved.borrow(){
+            *self.moved.borrow_mut()=true;
+        }
+    }
 }
 pub struct Knight{
+    moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Knight{
     pub fn new(color:Color,name:Type)->Knight{
         Knight{
+            moved:RefCell::new(false),
             color,
             name,
         }
     }
 }
 impl Piece for Knight{
-
-
     fn get_props(&self)->Props{
         Props { 
             color:self.color, 
@@ -440,22 +549,36 @@ impl Piece for Knight{
         .filter_map(|x|x.clone())
         .collect()
     }
+
+    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
+        vec![]
+    }
+
+    fn is_moved(&self)->bool {
+        *self.moved.borrow()
+    }
+    fn moved(&self) {
+        if !*self.moved.borrow(){
+            *self.moved.borrow_mut()=true;
+        }
+    }
+
 }
 pub struct Pawn{
+    moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Pawn{
     pub fn new(color:Color,name:Type)->Pawn{
         Pawn{
+            moved:RefCell::new(false),
             color,
             name,
         }
     }
 }
 impl Piece for Pawn{
-
-
 
     fn get_props(&self)->Props{
         Props { 
@@ -465,10 +588,45 @@ impl Piece for Pawn{
     }
 
     fn moves(&self,point:Point)->Vec<Point> {
-        let mut  vec = self.top_lefts(point);
-        vec.extend(self.tops(point));
-        vec.extend(self.top_rights(point));
-        vec
+        let mut vec :Vec<Point> = vec![
+            self.top_left(point),
+            self.top_right(point),
+            self.top(point)
+        ].iter()
+        .filter_map(|x|x.clone())
+        .collect();
+
+        if !*self.moved.borrow(){
+            vec.push(self.top_x2(point));
+        }
+        vec 
     }
 
+    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
+        vec![]
+    }
+
+    fn is_moved(&self)->bool {
+        *self.moved.borrow()
+    }
+    fn moved(&self) {
+        if !*self.moved.borrow(){
+            *self.moved.borrow_mut()=true;
+        }
+    }
+
+}
+impl Pawn{
+    fn top_x2(&self, point:Point)->Point{
+        let top =if self.get_props().color==Color::White{
+            point.rank + 2
+        }else{
+            point.rank - 2
+        };
+
+        if top>=1 && top<=8 {
+        }
+        return Point::new(point.file,top);
+        
+    }
 }

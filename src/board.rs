@@ -130,57 +130,50 @@ impl Board{
         Err(error::InvalidateInutError)
     }
 
-    pub fn get_pieces(&self, color:Color)->Vec<&Square>{
+    pub fn get_pieces_by_color(&self, color:Color)->Vec<&Square>{
         let mut vec=vec![];
         for row in self.squares.iter(){
             for square in row{
                 let piece= square.piece.borrow();
 
-                if piece.as_ref().is_some(){
-                    if piece.as_ref().unwrap().get_props().color == color{
-                        vec.push(square);
-                    }
+                if piece.as_ref().is_some() && piece.as_ref().unwrap().get_props().color == color{
+                    vec.push(square);
                 }
             }
         }
         vec
     }
 
-    pub fn under_move(&self, point:Point, point2:Point)-> bool{
+    pub fn points_between(&self,point:Point,point2:Point)->Vec<Point>{
         for row in self.squares.iter(){
             for square in row{
                 let piece= square.piece.borrow();
-
-                if piece.as_ref().is_some() && square.point == point{
-                    let x = piece.as_ref().unwrap().tops(point);
-
-
-
-
-                    let moves = piece.as_ref().unwrap().moves(point);
-                    if moves.contains(&point2){
-                        return true;
-                    }else{
-                        return false;
-                    }
-
-                    
+                if piece.as_ref().is_some(){
+                    return piece.as_ref().unwrap().points_between(point, point2);
                 }
             }
         }
-
-        false
+        vec![]
     }
 
     pub fn is_blocked(&self,point:Point, point2:Point)->bool{
-
+        let points =self.points_between(point, point2);
+        for row in self.squares.iter(){
+            for square in row{
+                if square.piece.borrow().as_ref().is_some(){
+                    if points.contains(&square.point){
+                        return true;
+                    }
+                }
+            }
+        }
         false
     }
-
 
     pub fn draw(&self,color:Color){
         if color==Color::White{
             for row in self.squares.iter(){
+                print!("{}",row[0].point.rank);
                 for square in row.iter(){
                     let piece= square.piece.borrow();
                     
@@ -193,8 +186,10 @@ impl Board{
                 }
                 println!();
             }
+            println!("  a  b  c  d  e  f  g  h");
         } else{
             for row in self.squares.iter().rev(){
+                print!("{}",row[0].point.rank);
                 for square in row.iter().rev(){
                     let piece= square.piece.borrow();
                     
@@ -207,6 +202,7 @@ impl Board{
                 }
                 println!();
             }
+            println!("  h  g  f  e  d  c  b  a");
         }
     }
     
