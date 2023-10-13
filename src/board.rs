@@ -136,7 +136,7 @@ impl Board{
             for square in row{
                 let piece= square.piece.borrow();
 
-                if piece.as_ref().is_some() && piece.as_ref().unwrap().get_props().color == color{
+                if piece.is_some() && piece.as_ref().unwrap().get_props().color == color{
                     vec.push(square);
                 }
             }
@@ -148,7 +148,7 @@ impl Board{
         for row in self.squares.iter(){
             for square in row{
                 let piece= square.piece.borrow();
-                if piece.as_ref().is_some(){
+                if piece.is_some(){
                     return piece.as_ref().unwrap().points_between(point, point2);
                 }
             }
@@ -160,7 +160,7 @@ impl Board{
         let points =self.points_between(point, point2);
         for row in self.squares.iter(){
             for square in row{
-                if square.piece.borrow().as_ref().is_some(){
+                if square.piece.borrow().is_some(){
                     if points.contains(&square.point){
                         return true;
                     }
@@ -177,7 +177,7 @@ impl Board{
                 for square in row.iter(){
                     let piece= square.piece.borrow();
                     
-                    if piece.as_ref().is_some(){
+                    if piece.is_some(){
                         let props = piece.as_ref().unwrap().get_props();
                         print!(" {} ",props.get_name());
                     } else{
@@ -193,7 +193,7 @@ impl Board{
                 for square in row.iter().rev(){
                     let piece= square.piece.borrow();
                     
-                    if piece.as_ref().is_some(){
+                    if piece.is_some(){
                         let props = piece.as_ref().unwrap().get_props();
                         print!(" {} ",props.get_name());
                     } else{

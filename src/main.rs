@@ -9,6 +9,11 @@ fn main() {
 
 }
 
+struct Record{
+    name:Type,
+    src:Point,
+    des:Point
+}
 struct ChessManager{
     board:Rc<Board>,
     is_running:bool,
@@ -25,9 +30,71 @@ impl ChessManager{
             player2:Player{board:Rc::clone(&board),color:Color::Black}
         }
     }
+    fn convert(&self,color:Color,name:Type,src:Point,des:Point)->String{
+        let n = match name{
+            Type::King=>'K',
+            Type::Queen=>'Q',
+            Type::Rook=>'R',
+            Type::Bishop=>'B',
+            Type::Knight=>'N',
+            Type::Pawn=>' ',
+        };
+
+        let pieces = self.board.get_pieces_by_color(color);
+        let notation = pieces.iter()
+        .filter(|x|{
+            x.piece.borrow().as_ref().unwrap().get_props().name == name
+        })
+        .map(|x|{
+            let m = x.piece.borrow();
+            let p = m.as_ref().unwrap();
+            if p.get_props().name==name && x.point!=src{//same piece but different point
+                let points = p.moves(x.point);
+                if points.contains(&des) && !self.is_blocked(x.point, des){
+                    Some(x.point)
+                } else {
+                    None
+                }
+            } else{
+                None
+            }
+        })
+        .map(|x|{
+            let notation =if x.is_some(){
+                let p = x.unwrap();
+                let mut  r = String::new();
+                if src.rank == p.rank{
+                    r.push_str(&src.file.to_string());
+                }
+                if src.file == p.file{
+                    r.push_str(&src.rank.to_string());
+                }
+                r
+            }else{
+                String::new()
+            };
+            notation
+        })
+        .reduce(|acc,e|{
+            if acc.len()>e.len(){acc}else{e}
+        });
+
+
+
+        let mut result = n.to_string();
+        if notation.is_some(){
+            result.push_str(&notation.unwrap());
+        }
+        result.push_str(&des.notation());
+        result
+    }
+
     fn start(&mut self){
         self.is_running = true;
         //self.draw_board(Color::White);
+
+        let mut white_record:Vec<String> = vec![];
+        let mut black_record:Vec<String> = vec![];
         
 
         while self.is_running{
@@ -43,25 +110,69 @@ impl ChessManager{
 
                 if self.is_castling(square, square2){
                     self.castling(square, square2);
+                    let n =self.convert(Color::White, square.piece.borrow().as_ref().unwrap().get_props().name, square.point, square2.point);
+                    white_record.push(n);
                     continue;
                 }else if self.is_en_passant(square, square2){
                     self.en_passant();
                     continue;
                 } else {
+                    let n =self.convert(Color::White, square.piece.borrow().as_ref().unwrap().get_props().name, square.point, square2.point);
+                    white_record.push(n);
+
+
                     let mut piece = self.board.takes(square.point);
                     piece= self.board.replace(square2.point, piece);
                     //promotion
                     if self.is_promotion(square2){
                         self.promotion(square2)
                     }
-
                     self.post_check(square,square2);
                 }
 
-                
-
             }
 
+
+            for record in white_record.iter(){
+                println!("{:?}",record);
+            }
+
+            // let mut valid=false;
+
+            // while !valid{
+            //     self.draw_board(Color::Black);
+            //     let (square,square2) = self.player2.select();
+            //     valid = self.pre_check(square,square2);
+            //     if !valid{
+            //         continue;
+            //     }
+
+            //     if self.is_castling(square, square2){
+            //         self.castling(square, square2);
+            //         let n =self.convert(Color::White, square.piece.borrow().as_ref().unwrap().get_props().name, square.point, square2.point);
+            //         white_record.push(n);
+            //         continue;
+            //     }else if self.is_en_passant(square, square2){
+            //         self.en_passant();
+            //         continue;
+            //     } else {
+
+            //         let n =self.convert(Color::White, square.piece.borrow().as_ref().unwrap().get_props().name, square.point, square2.point);
+            //         white_record.push(n);
+
+            //         let mut piece = self.board.takes(square.point);
+            //         piece= self.board.replace(square2.point, piece);
+            //         //promotion
+            //         if self.is_promotion(square2){
+            //             self.promotion(square2)
+            //         }
+            //         self.post_check(square,square2);
+            //     }
+
+            // }
+            for record in std::iter::zip(white_record.iter(),black_record.iter()){
+                println!("{}|{}",  record.0, record.1);
+            }
 
         }
     }
@@ -104,7 +215,7 @@ impl ChessManager{
         *square.piece.borrow_mut()=piece
     }
     fn is_en_passant(&self,square:&Square,square2:&Square)->bool{
-        if square.piece.borrow().as_ref().is_some(){
+        if square.piece.borrow().is_some(){
             if square.point.rank==5 && square.piece.borrow().as_ref().unwrap().get_props().color==Color::White{
 
             }
@@ -144,7 +255,7 @@ impl ChessManager{
             }
         };
 
-        let is_rook_moved = if rook.piece.borrow().as_ref().is_some(){
+        let is_rook_moved = if rook.piece.borrow().is_some(){
             rook.piece.borrow().as_ref().unwrap().is_moved()
         }else{
             true
@@ -204,6 +315,7 @@ impl ChessManager{
             return false;
         }
     }
+
     fn is_blocked(&self,point:Point,point2:Point)->bool{
         if self.board.is_blocked(point, point2){
             println!("is blocked");

@@ -30,12 +30,10 @@ impl Player{
                         if b.piece.borrow().is_none() || b.piece.borrow().as_ref().unwrap().get_props().color != self.color{
                             return (a,b);
                         }else{
-                            println!("aaaa");
                             println!("{} is not your piece",b.point.notation());
                         }
                     }else{
-                        println!("bbbb");
-                        println!("{:?}",a.piece.borrow().as_ref().is_some());
+                        println!("{:?}",a.piece.borrow().is_some());
                         println!("{} is not your piece",a.point.notation());
                     }
                     continue;
