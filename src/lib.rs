@@ -29,6 +29,7 @@ pub enum Type{
 
 
 pub struct Props{
+    pub id:u128,
     pub color:Color,
     pub name:Type,
 }

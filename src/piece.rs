@@ -1,12 +1,12 @@
 
-use std::cell::RefCell;
+use std::{cell::RefCell, rc::Rc, time::SystemTime};
 
-use crate::{Type, Point, Props, Color};
+use crate::{Type, Point, Props, Color, board::Board};
 
 
 pub trait Piece{
     fn get_props(&self)->Props;
-    fn moves(&self, point:Point)->Vec<Point>;
+    fn moves(&self)->Vec<Point>;
     fn points_between(&self,point:Point,point2:Point)->Vec<Point>;
     fn is_moved(&self)->bool;
     fn moved(&self);
@@ -271,16 +271,20 @@ pub trait Piece{
 }
 
 pub struct King{
+    id:u128,
+    board:Rc<Board>,
     moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl King{
-    pub fn new(color:Color,name:Type)->King{
+    pub fn new(color:Color, board:Rc<Board>)->King{
         King{
+            id:SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos(),
             moved:RefCell::new(false),
             color,
-            name,
+            name:Type::King,
+            board:board,
         }
     }
 }
@@ -298,14 +302,19 @@ impl Piece for King{
 
     fn get_props(&self)->Props{
         Props { 
+            id:self.id,
             color:self.color, 
             name: self.name, 
         }
     }
 
-    fn moves(&self, point:Point)->Vec<Point> {
-        
-        let mut vec = self.surrounding_points(point);
+    fn moves(&self)->Vec<Point> {
+        let s = self.board.squares.iter()
+        .flat_map(|x|x.iter())
+        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+        .unwrap();
+
+        let mut vec = self.surrounding_points(s.point);
         if !*self.moved.borrow(){
             vec.extend(self.side_x2());
         }
@@ -329,16 +338,20 @@ impl Piece for King{
 }
 
 pub struct Queen{
+    id:u128,
+    board:Rc<Board>,
     moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Queen{
-    pub fn new(color:Color,name:Type)->Queen{
+    pub fn new(color:Color,board:Rc<Board>)->Queen{
         Queen{
+            id:SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos(),
             moved:RefCell::new(false),
             color,
-            name,
+            name:Type::Queen,
+            board
         }
     }
 }
@@ -346,6 +359,7 @@ impl Piece for Queen{
 
     fn get_props(&self)->Props{
         Props { 
+            id:self.id,
             color:self.color, 
             name: self.name, 
         }
@@ -356,15 +370,20 @@ impl Piece for Queen{
     // }
 
 
-    fn moves(&self,point:Point)->Vec<Point> {
-        let mut vec = self.top_lefts(point);
-        vec.extend(self.tops(point));
-        vec.extend(self.top_rights(point));
-        vec.extend(self.lefts(point));
-        vec.extend(self.rights(point));
-        vec.extend(self.bottom_lefts(point));
-        vec.extend(self.bottoms(point));
-        vec.extend(self.bottom_rights(point));
+    fn moves(&self)->Vec<Point> {
+        let s = self.board.squares.iter()
+        .flat_map(|x|x.iter())
+        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+        .unwrap();
+    
+        let mut vec = self.top_lefts(s.point);
+        vec.extend(self.tops(s.point));
+        vec.extend(self.top_rights(s.point));
+        vec.extend(self.lefts(s.point));
+        vec.extend(self.rights(s.point));
+        vec.extend(self.bottom_lefts(s.point));
+        vec.extend(self.bottoms(s.point));
+        vec.extend(self.bottom_rights(s.point));
         vec
     }
 
@@ -402,32 +421,42 @@ impl Piece for Queen{
     
 }
 pub struct Rook{
+    id:u128,
+    board:Rc<Board>,
     moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Rook{
-    pub fn new(color:Color,name:Type)->Rook{
+    pub fn new(color:Color, board:Rc<Board>)->Rook{
         Rook{
+            id:SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos(),
             moved:RefCell::new(false),
             color,
-            name,
+            name:Type::Rook,
+            board
         }
     }
 }
 impl Piece for Rook{
     fn get_props(&self)->Props{
         Props { 
+            id:self.id,
             color:self.color, 
             name: self.name, 
         }
     }
 
-    fn moves(&self,point:Point)->Vec<Point> {
-        let mut vec = self.tops(point);
-        vec.extend(self.lefts(point));
-        vec.extend(self.rights(point));
-        vec.extend(self.bottoms(point));
+    fn moves(&self)->Vec<Point> {
+        let s = self.board.squares.iter()
+        .flat_map(|x|x.iter())
+        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+        .unwrap();
+
+        let mut vec = self.tops(s.point);
+        vec.extend(self.lefts(s.point));
+        vec.extend(self.rights(s.point));
+        vec.extend(self.bottoms(s.point));
         vec
     }
 
@@ -459,16 +488,20 @@ impl Piece for Rook{
 
 
 pub struct Bishop{
+    id:u128,
+    board:Rc<Board>,
     moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Bishop{
-    pub fn new(color:Color,name:Type)->Bishop{
+    pub fn new(color:Color,board:Rc<Board>)->Bishop{
         Bishop{
+            id:SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos(),
             moved:RefCell::new(false),
             color,
-            name,
+            name:Type::Bishop,
+            board
         }
     }
 }
@@ -476,16 +509,22 @@ impl Piece for Bishop{
 
     fn get_props(&self)->Props{
         Props { 
+            id:self.id,
             color:self.color, 
             name: self.name, 
         }
     }
 
-    fn moves(&self,point:Point)->Vec<Point> {
-        let mut  vec = self.top_lefts(point);
-        vec.extend(self.top_rights(point));
-        vec.extend(self.bottom_lefts(point));
-        vec.extend(self.bottom_rights(point));
+    fn moves(&self)->Vec<Point> {
+        let s = self.board.squares.iter()
+        .flat_map(|x|x.iter())
+        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+        .unwrap();
+
+        let mut  vec = self.top_lefts(s.point);
+        vec.extend(self.top_rights(s.point));
+        vec.extend(self.bottom_lefts(s.point));
+        vec.extend(self.bottom_rights(s.point));
         vec
     }
 
@@ -514,37 +553,46 @@ impl Piece for Bishop{
     }
 }
 pub struct Knight{
+    id:u128,
+    board:Rc<Board>,
     moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Knight{
-    pub fn new(color:Color,name:Type)->Knight{
+    pub fn new(color:Color,board:Rc<Board>,)->Knight{
         Knight{
+            id:SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos(),
             moved:RefCell::new(false),
             color,
-            name,
+            name:Type::Knight,
+            board
         }
     }
 }
 impl Piece for Knight{
     fn get_props(&self)->Props{
         Props { 
+            id:self.id,
             color:self.color, 
             name: self.name, 
         }
     }
 
-    fn moves(&self,point:Point)->Vec<Point> {
+    fn moves(&self)->Vec<Point> {
+        let s = self.board.squares.iter()
+        .flat_map(|x|x.iter())
+        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+        .unwrap();
         vec![
-            self.top_top_left(point),
-            self.top_top_right(point),
-            self.right_top_right(point),
-            self.right_bottom_right(point),
-            self.bottom_bottom_right(point),
-            self.bottom_bottom_left(point),
-            self.left_bottom_left(point),
-            self.left_top_left(point),
+            self.top_top_left(s.point),
+            self.top_top_right(s.point),
+            self.right_top_right(s.point),
+            self.right_bottom_right(s.point),
+            self.bottom_bottom_right(s.point),
+            self.bottom_bottom_left(s.point),
+            self.left_bottom_left(s.point),
+            self.left_top_left(s.point),
         ].iter()
         .filter_map(|x|x.clone())
         .collect()
@@ -565,39 +613,50 @@ impl Piece for Knight{
 
 }
 pub struct Pawn{
+    id:u128,
+    board:Rc<Board>,
     moved:RefCell<bool>,
     color:Color,
     name:Type,
 }
 impl Pawn{
-    pub fn new(color:Color,name:Type)->Pawn{
+    pub fn new(color:Color,board:Rc<Board>,)->Pawn{
         Pawn{
+            id:SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos(),
             moved:RefCell::new(false),
             color,
-            name,
+            name:Type::Pawn,
+            board
         }
     }
 }
 impl Piece for Pawn{
 
     fn get_props(&self)->Props{
-        Props { 
+        Props {
+            id:self.id, 
             color:self.color, 
             name: self.name, 
         }
     }
 
-    fn moves(&self,point:Point)->Vec<Point> {
+    fn moves(&self)->Vec<Point> {
+
+        let s = self.board.squares.iter()
+        .flat_map(|x|x.iter())
+        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+        .unwrap();
+
         let mut vec :Vec<Point> = vec![
-            self.top_left(point),
-            self.top_right(point),
-            self.top(point)
+            self.top_left(s.point),
+            self.top_right(s.point),
+            self.top(s.point)
         ].iter()
         .filter_map(|x|x.clone())
         .collect();
 
         if !*self.moved.borrow(){
-            vec.push(self.top_x2(point));
+            vec.push(self.top_x2(s.point));
         }
         vec 
     }

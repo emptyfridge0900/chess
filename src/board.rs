@@ -4,31 +4,31 @@ use crate::{Square, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, Col
 
 
 pub struct Board{
-    squares:[[Square; 8]; 8]
+    pub squares:[[Square; 8]; 8]
 }
 impl Board{
     pub fn new()->Board{
-       Board{ 
+    Board{ 
         squares : [
         [
-            Square::new(RefCell::new(Some(Box::new(Rook::new(Color::Black,Type::Rook)))),Point::new('a',8)),
-            Square::new(RefCell::new(Some(Box::new(Knight::new(Color::Black,Type::Knight)))),Point::new('b',8)),
-            Square::new(RefCell::new(Some(Box::new(Bishop::new(Color::Black,Type::Bishop)))),Point::new('c',8)),
-            Square::new(RefCell::new(Some(Box::new(Queen::new(Color::Black,Type::Queen)))),Point::new('d',8)),
-            Square::new(RefCell::new(Some(Box::new(King::new(Color::Black,Type::King)))),Point::new('e',8)),
-            Square::new(RefCell::new(Some(Box::new(Bishop::new(Color::Black,Type::Bishop)))),Point::new('f',8)),
-            Square::new(RefCell::new(Some(Box::new(Knight::new(Color::Black,Type::Knight)))),Point::new('g',8)),
-            Square::new(RefCell::new(Some(Box::new(Rook::new(Color::Black,Type::Rook)))),Point::new('h',8)),
+            Square::new(RefCell::new(None),Point::new('a',8)),
+            Square::new(RefCell::new(None),Point::new('b',8)),
+            Square::new(RefCell::new(None),Point::new('c',8)),
+            Square::new(RefCell::new(None),Point::new('d',8)),
+            Square::new(RefCell::new(None),Point::new('e',8)),
+            Square::new(RefCell::new(None),Point::new('f',8)),
+            Square::new(RefCell::new(None),Point::new('g',8)),
+            Square::new(RefCell::new(None),Point::new('h',8)),
         ],
         [
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('a',7)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('b',7)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('c',7)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('d',7)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('e',7)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('f',7)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('g',7)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::Black,Type::Pawn)))),Point::new('h',7)),
+            Square::new(RefCell::new(None),Point::new('a',7)),
+            Square::new(RefCell::new(None),Point::new('b',7)),
+            Square::new(RefCell::new(None),Point::new('c',7)),
+            Square::new(RefCell::new(None),Point::new('d',7)),
+            Square::new(RefCell::new(None),Point::new('e',7)),
+            Square::new(RefCell::new(None),Point::new('f',7)),
+            Square::new(RefCell::new(None),Point::new('g',7)),
+            Square::new(RefCell::new(None),Point::new('h',7)),
         ],
         [
             Square::new(RefCell::new(None),Point::new('a',6)),
@@ -71,28 +71,28 @@ impl Board{
             Square::new(RefCell::new(None),Point::new('h',3)),
         ],
         [
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('a',2)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('b',2)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('c',2)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('d',2)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('e',2)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('f',2)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('g',2)),
-            Square::new(RefCell::new(Some(Box::new(Pawn::new(Color::White,Type::Pawn)))),Point::new('h',2)),
+            Square::new(RefCell::new(None),Point::new('a',2)),
+            Square::new(RefCell::new(None),Point::new('b',2)),
+            Square::new(RefCell::new(None),Point::new('c',2)),
+            Square::new(RefCell::new(None),Point::new('d',2)),
+            Square::new(RefCell::new(None),Point::new('e',2)),
+            Square::new(RefCell::new(None),Point::new('f',2)),
+            Square::new(RefCell::new(None),Point::new('g',2)),
+            Square::new(RefCell::new(None),Point::new('h',2)),
         ],
         [
-            Square::new(RefCell::new(Some(Box::new(Rook::new(Color::White,Type::Rook)))),Point::new('a',1)),
-            Square::new(RefCell::new(Some(Box::new(Knight::new(Color::White,Type::Knight)))),Point::new('b',1)),
-            Square::new(RefCell::new(Some(Box::new(Bishop::new(Color::White,Type::Bishop)))),Point::new('c',1)),
-            Square::new(RefCell::new(Some(Box::new(Queen::new(Color::White,Type::Queen)))),Point::new('d',1)),
-            Square::new(RefCell::new(Some(Box::new(King::new(Color::White,Type::King)))),Point::new('e',1)),
-            Square::new(RefCell::new(Some(Box::new(Bishop::new(Color::White,Type::Bishop)))),Point::new('f',1)),
-            Square::new(RefCell::new(Some(Box::new(Knight::new(Color::White,Type::Knight)))),Point::new('g',1)),
-            Square::new(RefCell::new(Some(Box::new(Rook::new(Color::White,Type::Rook)))),Point::new('h',1)),
+            Square::new(RefCell::new(None),Point::new('a',1)),
+            Square::new(RefCell::new(None),Point::new('b',1)),
+            Square::new(RefCell::new(None),Point::new('c',1)),
+            Square::new(RefCell::new(None),Point::new('d',1)),
+            Square::new(RefCell::new(None),Point::new('e',1)),
+            Square::new(RefCell::new(None),Point::new('f',1)),
+            Square::new(RefCell::new(None),Point::new('g',1)),
+            Square::new(RefCell::new(None),Point::new('h',1)),
         ],
 
-    ]
-       }
+        ]
+    }
     }
 
     pub fn takes(&self, point:Point)->Option<Box<dyn Piece>>{
@@ -168,6 +168,30 @@ impl Board{
             }
         }
         false
+    }
+
+    fn available_moves(&self,square:&Square)->Vec<&Square>{
+        let mut vec:Vec<&Square> = vec![];
+        let points = square.piece.borrow().as_ref().unwrap().moves();
+        // for row in self.squares.iter(){
+        //     for s in row{
+        //         if points.contains(&s.point){
+
+        //         }
+        //     }
+        // }
+        let squares:Vec<&Square> = self.squares.iter().flat_map(|x|{
+            x.iter().filter(|y|{
+                points.contains(&y.point)
+            })
+        })
+        .filter(|x|x.piece.borrow().is_none())
+        .collect();
+
+
+
+
+        vec![]
     }
 
     pub fn draw(&self,color:Color){

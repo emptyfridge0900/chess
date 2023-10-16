@@ -5,6 +5,7 @@ use regex::Regex;
 fn main() {
 
     let mut manager = ChessManager::new();
+    manager.settting();
     manager.start();
 
 }
@@ -30,6 +31,40 @@ impl ChessManager{
             player2:Player{board:Rc::clone(&board),color:Color::Black}
         }
     }
+
+    fn piece(&self, name:Type,color:Color)->Option<Box<dyn Piece>>{
+        match name{
+            Type::King=>Some(Box::new(King::new(Color::White,Rc::clone(&self.board)))),
+            Type::Queen=>Some(Box::new(Queen::new(Color::White,Rc::clone(&self.board)))),
+            Type::Rook=>Some(Box::new(Rook::new(Color::White,Rc::clone(&self.board)))),
+            Type::Bishop=>Some(Box::new(Bishop::new(Color::White,Rc::clone(&self.board)))),
+            Type::Knight=>Some(Box::new(Knight::new(Color::White,Rc::clone(&self.board)))),
+            Type::Pawn=>Some(Box::new(Pawn::new(Color::White,Rc::clone(&self.board)))),
+        }
+    }
+
+    fn settting(&self){
+        for (rank,row) in self.board.squares.iter().enumerate(){
+            for (file,square) in row.iter().enumerate(){
+                if rank==0 || rank == 1|| rank==6||rank==7 {
+                    let p =match rank{
+                        1|6 => self.piece(Type::Pawn,if rank==1{Color::Black}else{Color::White}),
+                        0|7 => match file {
+                            0|7=>self.piece(Type::Rook, if rank==0{Color::Black}else{Color::White}),
+                            1|6=>self.piece(Type::Knight, if rank==0{Color::Black}else{Color::White}),
+                            2|5=>self.piece(Type::Bishop, if rank==0{Color::Black}else{Color::White}),
+                            3=>self.piece(Type::King, if rank==0{Color::Black}else{Color::White}),
+                            4=>self.piece(Type::Queen, if rank==0{Color::Black}else{Color::White}),
+                            _=>unreachable!()
+                        },
+                        _=>unreachable!(),
+                    };
+                    *square.piece.borrow_mut()=p;
+                }
+            }
+        }
+    }
+
     fn convert(&self,color:Color,name:Type,src:Point,des:Point)->String{
         let n = match name{
             Type::King=>'K',
@@ -49,7 +84,7 @@ impl ChessManager{
             let m = x.piece.borrow();
             let p = m.as_ref().unwrap();
             if p.get_props().name==name && x.point!=src{//same piece but different point
-                let points = p.moves(x.point);
+                let points = p.moves();
                 if points.contains(&des) && !self.is_blocked(x.point, des){
                     Some(x.point)
                 } else {
@@ -90,6 +125,15 @@ impl ChessManager{
     }
 
     fn start(&mut self){
+        
+        let king:Option<Box<dyn Piece>> = Some(Box::new(King::new(Color::White,Rc::clone(&self.board))));
+        // for row in self.board.squares{
+        //     for xyz in row{
+        //         if xyz.piece.borrow().is_some(){
+        //             *xyz.piece.borrow_mut()=(king);
+        //         }
+        //     }
+        // }
         self.is_running = true;
         //self.draw_board(Color::White);
 
@@ -206,10 +250,10 @@ impl ChessManager{
         let mut pick = String::new();
         std::io::stdin().read_line(&mut pick).expect("failed to readline");
         let piece:Option<Box<dyn Piece>> =match &*pick.trim(){
-            "queen"=>Some(Box::new(Queen::new(color,Type::Queen))),
-            "rook"=>Some(Box::new(Rook::new(color,Type::Rook))),
-            "bishop"=>Some(Box::new(Bishop::new(color,Type::Bishop))),
-            "knight"=>Some(Box::new(Knight::new(color,Type::Knight))),
+            "queen"=>Some(Box::new(Queen::new(color,Rc::clone(&self.board)))),
+            "rook"=>Some(Box::new(Rook::new(color,Rc::clone(&self.board)))),
+            "bishop"=>Some(Box::new(Bishop::new(color,Rc::clone(&self.board)))),
+            "knight"=>Some(Box::new(Knight::new(color,Rc::clone(&self.board)))),
             _=>None
         };
         *square.piece.borrow_mut()=piece
@@ -273,7 +317,7 @@ impl ChessManager{
         let mut is_king_under_check= false;
         for s in squares{
             for t in square.piece.borrow().as_ref().unwrap().points_between(square.point, square2.point){
-                let points = s.piece.borrow().as_ref().unwrap().moves(s.point);
+                let points = s.piece.borrow().as_ref().unwrap().moves();
                 if points.contains(&t) && !self.is_blocked(s.point,t){
                     is_king_under_check = true;
                     break;
@@ -307,7 +351,7 @@ impl ChessManager{
     
     
     fn is_in_range(&self,square:&Square,square2:&Square)->bool{
-        let points = square.piece.borrow().as_ref().unwrap().moves(square.point);
+        let points = square.piece.borrow().as_ref().unwrap().moves();
         if points.contains(&square2.point){
             return true;
         } else{
