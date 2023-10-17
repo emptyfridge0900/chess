@@ -11,6 +11,7 @@ pub trait Piece{
     fn is_moved(&self)->bool;
     fn moved(&self);
     fn square(&self)->&Square;
+    fn board(&self)->&Board;
 
     fn surrounding_points(&self)->Vec<Point>{
         vec![
@@ -31,7 +32,7 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.top_left();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.top_left(self.get_props().color)
@@ -48,7 +49,7 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.top();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.top(self.get_props().color)
@@ -65,7 +66,7 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.top_right();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.top_right(self.get_props().color)
@@ -82,14 +83,12 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.bottom_left();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.bottom_left(self.get_props().color)
             }else{
-                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
-                    vec.push(point.clone());
-                }
+                vec.push(point.clone());
                 next = None
             }
         }
@@ -99,7 +98,7 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.bottom();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.bottom(self.get_props().color)
@@ -116,7 +115,7 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.bottom_right();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.bottom_right(self.get_props().color)
@@ -133,7 +132,7 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.left();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.left(self.get_props().color)
@@ -150,7 +149,7 @@ pub trait Piece{
         let mut vec:Vec<Point> =vec![];
         let mut next = self.right();
         while let Some(point) = next{
-            let s = self.square();
+            let s =self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none(){
                 vec.push(point.clone());
                 next = point.right(self.get_props().color)
@@ -482,6 +481,10 @@ impl Piece for King{
             *self.moved.borrow_mut()=true;
         }
     }
+
+    fn board(&self)->&Board {
+        &self.board
+    }
     
 }
 
@@ -565,6 +568,9 @@ impl Piece for Queen{
             *self.moved.borrow_mut()=true;
         }
     }
+    fn board(&self)->&Board {
+        &self.board
+    }
     
 }
 pub struct Rook{
@@ -634,6 +640,9 @@ impl Piece for Rook{
         if !*self.moved.borrow(){
             *self.moved.borrow_mut()=true;
         }
+    }
+    fn board(&self)->&Board {
+        &self.board
     }
 
 }
@@ -709,6 +718,10 @@ impl Piece for Bishop{
             *self.moved.borrow_mut()=true;
         }
     }
+    fn board(&self)->&Board {
+        &self.board
+    }
+
 }
 pub struct Knight{
     id:u128,
@@ -746,9 +759,7 @@ impl Piece for Knight{
     }
 
     fn moves(&self)->Vec<Point> {
-        println!("{:?}",self.top_top_left());
-        println!("{:?}",self.top_top_right());
-        //println!("{:?}",self.right_top_right());
+        //self.square().piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color
         vec![
             self.top_top_left(),
             self.top_top_right(),
@@ -774,6 +785,9 @@ impl Piece for Knight{
         if !*self.moved.borrow(){
             *self.moved.borrow_mut()=true;
         }
+    }
+    fn board(&self)->&Board {
+        &self.board
     }
 
 }
@@ -839,6 +853,9 @@ impl Piece for Pawn{
         if !*self.moved.borrow(){
             *self.moved.borrow_mut()=true;
         }
+    }
+    fn board(&self)->&Board {
+        &self.board
     }
 
 }
