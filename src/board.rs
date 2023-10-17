@@ -112,7 +112,9 @@ impl Board{
         for row in self.squares.iter(){
             for square in row{
                 if point.notation()==square.point.notation(){
-                    return square.piece.borrow_mut().replace(piece.unwrap());
+                    let p = piece.unwrap();
+                    p.moved();
+                    return square.piece.borrow_mut().replace(p);
                 }
             }
         }
@@ -145,54 +147,22 @@ impl Board{
     }
 
     pub fn points_between(&self,point:Point,point2:Point)->Vec<Point>{
-        for row in self.squares.iter(){
-            for square in row{
+        let s = self.get_square(&point.notation());
+        match s {
+            Ok(square)=>{
                 let piece= square.piece.borrow();
                 if piece.is_some(){
-                    return piece.as_ref().unwrap().points_between(point, point2);
+                    piece.as_ref().unwrap().points_between(point2)
+                }else{
+                    vec![]
                 }
-            }
+            },
+            Err(err)=>vec![]
         }
-        vec![]
     }
 
-    pub fn is_blocked(&self,point:Point, point2:Point)->bool{
-        let points =self.points_between(point, point2);
-        for row in self.squares.iter(){
-            for square in row{
-                if square.piece.borrow().is_some(){
-                    if points.contains(&square.point){
-                        return true;
-                    }
-                }
-            }
-        }
-        false
-    }
-
-    fn available_moves(&self,square:&Square)->Vec<&Square>{
-        let mut vec:Vec<&Square> = vec![];
-        let points = square.piece.borrow().as_ref().unwrap().moves();
-        // for row in self.squares.iter(){
-        //     for s in row{
-        //         if points.contains(&s.point){
-
-        //         }
-        //     }
-        // }
-        let squares:Vec<&Square> = self.squares.iter().flat_map(|x|{
-            x.iter().filter(|y|{
-                points.contains(&y.point)
-            })
-        })
-        .filter(|x|x.piece.borrow().is_none())
-        .collect();
 
 
-
-
-        vec![]
-    }
 
     pub fn draw(&self,color:Color){
         if color==Color::White{

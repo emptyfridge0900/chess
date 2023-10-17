@@ -85,7 +85,8 @@ impl ChessManager{
             let p = m.as_ref().unwrap();
             if p.get_props().name==name && x.point!=src{//same piece but different point
                 let points = p.moves();
-                if points.contains(&des) && !self.is_blocked(x.point, des){
+                if points.contains(&des) //&& !self.is_blocked(x.point, des)
+                {
                     Some(x.point)
                 } else {
                     None
@@ -147,6 +148,8 @@ impl ChessManager{
             while !valid{
                 self.draw_board(Color::White);
                 let (square,square2) = self.player1.select();
+                println!("{:?}",square.piece.borrow().as_ref().unwrap().moves());
+                println!("{:?}",square.piece.borrow().as_ref().unwrap().get_props().name);
                 valid = self.pre_check(square,square2);
                 if !valid{
                     continue;
@@ -173,7 +176,6 @@ impl ChessManager{
                     }
                     self.post_check(square,square2);
                 }
-
             }
 
 
@@ -224,8 +226,7 @@ impl ChessManager{
         self.is_running = false;
     }
     fn pre_check(&self,square:&Square,square2:&Square)-> bool {
-        self.is_in_range(square,square2) && 
-        !self.is_blocked(square.point,square2.point)
+        self.is_in_range(square,square2) 
     }
     fn post_check(&self,square:&Square,square2:&Square){
         //check
@@ -316,18 +317,17 @@ impl ChessManager{
         
         let mut is_king_under_check= false;
         for s in squares{
-            for t in square.piece.borrow().as_ref().unwrap().points_between(square.point, square2.point){
+            for t in square.piece.borrow().as_ref().unwrap().points_between(square2.point){
                 let points = s.piece.borrow().as_ref().unwrap().moves();
-                if points.contains(&t) && !self.is_blocked(s.point,t){
+                if points.contains(&t) {
                     is_king_under_check = true;
                     break;
                 }
             }
         }
         
-        let is_piece_between = self.is_blocked(rook.point, square.point);
 
-        if !is_king_moved && !is_rook_moved && !is_king_under_check && !is_piece_between{
+        if !is_king_moved && !is_rook_moved && !is_king_under_check {
             let mut piece = self.board.takes(square.point);
             piece= self.board.replace(square2.point, piece);
 
@@ -356,15 +356,6 @@ impl ChessManager{
             return true;
         } else{
             println!("{} is not in range!",square2.point.notation());
-            return false;
-        }
-    }
-
-    fn is_blocked(&self,point:Point,point2:Point)->bool{
-        if self.board.is_blocked(point, point2){
-            println!("is blocked");
-            return true;
-        } else{
             return false;
         }
     }
