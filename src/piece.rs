@@ -770,7 +770,20 @@ impl Piece for Knight{
             self.left_bottom_left(),
             self.left_top_left(),
         ].iter()
-        .filter_map(|x|x.clone())
+        .filter_map(|x|{
+            if x.is_some(){
+                let s = self.board.get_square(&x.unwrap().notation()).unwrap();
+                if s.piece.borrow().is_some() && s.piece.borrow().as_ref().unwrap().get_props().color != self.color{
+                    x.clone()
+                } else if s.piece.borrow().is_none() {
+                    x.clone()
+                }else{
+                    None
+                }
+            }else{
+                None
+            } 
+        })
         .collect()
     }
 
@@ -828,17 +841,29 @@ impl Piece for Pawn{
     }
 
     fn moves(&self)->Vec<Point> {
-        let mut vec :Vec<Point> = vec![
-            self.top_left(),
-            self.top_right(),
-            self.top()
-        ].iter()
-        .filter_map(|x|x.clone())
-        .collect();
+        let mut vec :Vec<Point> = vec![];
 
-        if !self.is_moved(){
-            vec.push(self.top_x2());
+        for p in vec![self.top_left(), self.top_right()].iter(){
+            if let Some(point)=p{
+                let s = self.board.get_square(&point.notation()).unwrap();
+                if s.piece.borrow().is_some() && s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+            }
         }
+        if let Some(p)= self.top(){
+            let s = self.board.get_square(&p.notation()).unwrap();
+            if s.piece.borrow().is_none(){
+                vec.push(p); 
+            }
+        }
+        if !self.is_moved(){
+            let s = self.board.get_square(&self.top_x2().notation()).unwrap();
+            if s.piece.borrow().is_none(){
+                vec.push(self.top_x2()); 
+            }
+        }
+
         vec 
     }
 
@@ -862,14 +887,15 @@ impl Piece for Pawn{
 impl Pawn{
     fn top_x2(&self)->Point{
         let point = self.square().point;
-        let top =if self.get_props().color==Color::White{
+        let top = if self.get_props().color==Color::White{
             point.rank + 2
         }else{
             point.rank - 2
         };
-
         if top>=1 && top<=8 {
+
         }
+        
         return Point::new(point.file,top);
         
     }

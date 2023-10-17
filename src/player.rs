@@ -22,7 +22,6 @@ impl Player{
 
             let src_square =self.board.get_square(&select);
             let des_square = self.board.get_square(&target);
-            println!("{:?}",src_square.as_ref().unwrap().point);
             match (src_square,des_square){
                 (Ok(a), Ok(b))=>{
                     if a.piece.borrow().is_some() && a.piece.borrow().as_ref().unwrap().get_props().color == self.color 

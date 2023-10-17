@@ -34,12 +34,12 @@ impl ChessManager{
 
     fn piece(&self, name:Type,color:Color)->Option<Box<dyn Piece>>{
         match name{
-            Type::King=>Some(Box::new(King::new(Color::White,Rc::clone(&self.board)))),
-            Type::Queen=>Some(Box::new(Queen::new(Color::White,Rc::clone(&self.board)))),
-            Type::Rook=>Some(Box::new(Rook::new(Color::White,Rc::clone(&self.board)))),
-            Type::Bishop=>Some(Box::new(Bishop::new(Color::White,Rc::clone(&self.board)))),
-            Type::Knight=>Some(Box::new(Knight::new(Color::White,Rc::clone(&self.board)))),
-            Type::Pawn=>Some(Box::new(Pawn::new(Color::White,Rc::clone(&self.board)))),
+            Type::King=>Some(Box::new(King::new(color,Rc::clone(&self.board)))),
+            Type::Queen=>Some(Box::new(Queen::new(color,Rc::clone(&self.board)))),
+            Type::Rook=>Some(Box::new(Rook::new(color,Rc::clone(&self.board)))),
+            Type::Bishop=>Some(Box::new(Bishop::new(color,Rc::clone(&self.board)))),
+            Type::Knight=>Some(Box::new(Knight::new(color,Rc::clone(&self.board)))),
+            Type::Pawn=>Some(Box::new(Pawn::new(color,Rc::clone(&self.board)))),
         }
     }
 
@@ -149,7 +149,6 @@ impl ChessManager{
                 self.draw_board(Color::White);
                 let (square,square2) = self.player1.select();
                 println!("{:?}",square.piece.borrow().as_ref().unwrap().moves());
-                println!("{:?}",square.piece.borrow().as_ref().unwrap().get_props().name);
                 valid = self.pre_check(square,square2);
                 if !valid{
                     continue;
