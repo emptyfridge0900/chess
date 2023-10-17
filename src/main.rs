@@ -53,8 +53,8 @@ impl ChessManager{
                             0|7=>self.piece(Type::Rook, if rank==0{Color::Black}else{Color::White}),
                             1|6=>self.piece(Type::Knight, if rank==0{Color::Black}else{Color::White}),
                             2|5=>self.piece(Type::Bishop, if rank==0{Color::Black}else{Color::White}),
-                            3=>self.piece(Type::King, if rank==0{Color::Black}else{Color::White}),
-                            4=>self.piece(Type::Queen, if rank==0{Color::Black}else{Color::White}),
+                            3=>self.piece(Type::Queen, if rank==0{Color::Black}else{Color::White}),
+                            4=>self.piece(Type::King, if rank==0{Color::Black}else{Color::White}),
                             _=>unreachable!()
                         },
                         _=>unreachable!(),
