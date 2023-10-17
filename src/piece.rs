@@ -1,108 +1,246 @@
 
 use std::{cell::RefCell, rc::Rc, time::SystemTime};
 
-use crate::{Type, Point, Props, Color, board::Board};
+use crate::{Type, Point, Props, Color, board::Board, Square};
 
 
 pub trait Piece{
     fn get_props(&self)->Props;
     fn moves(&self)->Vec<Point>;
-    fn points_between(&self,point:Point,point2:Point)->Vec<Point>;
+    fn points_between(&self,point:Point)->Vec<Point>;
     fn is_moved(&self)->bool;
     fn moved(&self);
+    fn square(&self)->&Square;
 
-    fn surrounding_points(&self,point:Point)->Vec<Point>{
+    fn surrounding_points(&self)->Vec<Point>{
         vec![
-            self.top_left(point),
-            self.top(point),
-            self.top_right(point),
-            self.left(point),
-            self.right(point),
-            self.bottom_left(point),
-            self.bottom(point),
-            self.bottom_right(point),
+            self.top_left(),
+            self.top(),
+            self.top_right(),
+            self.left(),
+            self.right(),
+            self.bottom_left(),
+            self.bottom(),
+            self.bottom_right(),
         ].iter()
         .filter_map(|x|x.clone())
         .collect()
     }
 
-    fn top_lefts(&self,point:Point)->Vec<Point>{
+    fn top_lefts(&self)->Vec<Point> {
         let mut vec:Vec<Point> =vec![];
-        let mut next = self.top_left(point);
+        let mut next = self.top_left();
         while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.top_left(point);
-        } 
-        vec
-    }
-    fn tops(&self,point:Point)->Vec<Point>{
-        let mut vec:Vec<Point> =vec![];
-        let mut next = self.top(point);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.top(point);
-        }
-        
-        vec
-    }
-    fn top_rights(&self,point:Point)->Vec<Point>{
-        let mut vec:Vec<Point> =vec![];
-        let mut next = self.top_right(point);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.top_right(point);
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.top_left(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
         }
         vec
     }
-    fn lefts(&self,point:Point)->Vec<Point>{
+    fn tops(&self)->Vec<Point> {
         let mut vec:Vec<Point> =vec![];
-        let mut next = self.left(point);
+        let mut next = self.top();
         while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.left(point);
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.top(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
         }
+        vec
+    }
+    fn top_rights(&self)->Vec<Point> {
+        let mut vec:Vec<Point> =vec![];
+        let mut next = self.top_right();
+        while let Some(point) = next{
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.top_right(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
+        }
+        vec
+    }
+    fn bottom_lefts(&self)->Vec<Point> {
+        let mut vec:Vec<Point> =vec![];
+        let mut next = self.bottom_left();
+        while let Some(point) = next{
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.bottom_left(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
+        }
+        vec
+    }
+    fn bottoms(&self)->Vec<Point> {
+        let mut vec:Vec<Point> =vec![];
+        let mut next = self.bottom();
+        while let Some(point) = next{
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.bottom(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
+        }
+        vec
+    }
+    fn bottom_rights(&self)->Vec<Point> {
+        let mut vec:Vec<Point> =vec![];
+        let mut next = self.bottom_right();
+        while let Some(point) = next{
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.bottom_right(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
+        }
+        vec
+    }
+    fn lefts(&self)->Vec<Point> {
+        let mut vec:Vec<Point> =vec![];
+        let mut next = self.left();
+        while let Some(point) = next{
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.left(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
+        }
+        vec
+    }
+    fn rights(&self)->Vec<Point> {
+        let mut vec:Vec<Point> =vec![];
+        let mut next = self.right();
+        while let Some(point) = next{
+            let s = self.square();
+            if s.piece.borrow().is_none(){
+                vec.push(point.clone());
+                next = point.right(self.get_props().color)
+            }else{
+                if s.piece.borrow().as_ref().unwrap().get_props().color!=self.get_props().color{
+                    vec.push(point.clone());
+                }
+                next = None
+            }
+        }
+        vec
+    }
 
-        vec
-    }
-    fn rights(&self,point:Point)->Vec<Point>{
-        let mut vec:Vec<Point> =vec![];
-        let mut next = self.right(point);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next=self.right(point);
-        }
-        vec
-    }
-    fn bottom_lefts(&self,point:Point)->Vec<Point>{
-        let mut vec:Vec<Point>=vec![];
-        let mut next = self.bottom_left(point);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.bottom_left(point);
-        }
-        vec
-    }
-    fn bottoms(&self,point:Point)->Vec<Point>{
-        let mut vec:Vec<Point> =vec![];
-        let mut next = self.bottom(point);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.bottom(point);
-        }
-        
-        vec
-    }
-    fn bottom_rights(&self,point:Point)->Vec<Point>{
-        let mut vec:Vec<Point> =vec![];
-        let mut next = self.bottom_right(point);
-        while let Some(point) = next{
-            vec.push(point.clone());
-            next = self.bottom_right(point);
-        }
-        vec
-    }
 
-    fn top_right(&self,point:Point)->Option<Point>{
+    // fn top_lefts(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point> =vec![];
+    //     let mut next = self.top_left();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next = self.top_left();
+    //     } 
+    //     vec
+    // }
+    // fn tops(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point> =vec![];
+    //     let mut next = self.top();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next = self.top();
+    //     }
+    //     vec
+    // }
+    // fn top_rights(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point> =vec![];
+    //     let mut next = self.top_right();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next = self.top_right();
+    //     }
+    //     vec
+    // }
+    // fn lefts(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point> =vec![];
+    //     let mut next = self.left();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next = self.left();
+    //     }
+    //     vec
+    // }
+    // fn rights(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point> =vec![];
+    //     let mut next = self.right();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next=self.right();
+    //     }
+    //     vec
+    // }
+    // fn bottom_lefts(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point>=vec![];
+    //     let mut next = self.bottom_left();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next = self.bottom_left();
+    //     }
+    //     vec
+    // }
+    // fn bottoms(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point> =vec![];
+    //     let mut next = self.bottom();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next = self.bottom();
+    //     }
+    //     vec
+    // }
+    // fn bottom_rights(&self)->Vec<Point>{
+    //     let mut vec:Vec<Point> =vec![];
+    //     let mut next = self.bottom_right();
+    //     while let Some(point) = next{
+    //         vec.push(point.clone());
+    //         next = self.bottom_right();
+    //     }
+    //     vec
+    // }
+
+
+    fn top_right(&self)->Option<Point>{
+        let point =  self.square().point;
         let right = if self.get_props().color==Color::White{
             (point.file as u8 +1) as char
         }else{
@@ -118,7 +256,8 @@ pub trait Piece{
         }
         None
     }
-    fn top_left(&self,point:Point)->Option<Point>{
+    fn top_left(&self)->Option<Point>{
+        let point =  self.square().point;
         let left = if self.get_props().color==Color::White{
             (point.file as u8 -1) as char
         }else{
@@ -134,7 +273,8 @@ pub trait Piece{
         }
         None
     }
-    fn bottom_right(&self,point:Point)->Option<Point>{
+    fn bottom_right(&self)->Option<Point>{
+        let point =  self.square().point;
         let right = if self.get_props().color==Color::White{
             (point.file as u8 +1) as char
         }else{
@@ -150,7 +290,8 @@ pub trait Piece{
         }
         None
     }
-    fn bottom_left(&self,point:Point)->Option<Point>{
+    fn bottom_left(&self)->Option<Point>{
+        let point =  self.square().point;
         let left = if self.get_props().color==Color::White{
             (point.file as u8 -1) as char
         }else{
@@ -166,7 +307,8 @@ pub trait Piece{
         }
         None
     }
-    fn left(&self,point:Point)->Option<Point>{
+    fn left(&self)->Option<Point>{
+        let point =  self.square().point;
         let left = if self.get_props().color==Color::White{
             (point.file as u8 -1) as char
         }else{
@@ -177,7 +319,8 @@ pub trait Piece{
         }
         None
     }
-    fn right(&self,point:Point)->Option<Point>{
+    fn right(&self)->Option<Point>{
+        let point =  self.square().point;
         let right = if self.get_props().color==Color::White{
             (point.file as u8 +1) as char
         }else{
@@ -188,7 +331,8 @@ pub trait Piece{
         }
         None
     }
-    fn top(&self,point:Point)->Option<Point>{
+    fn top(&self)->Option<Point>{
+        let point =  self.square().point;
         let top =if self.get_props().color==Color::White{
             point.rank + 1
         }else{
@@ -199,7 +343,8 @@ pub trait Piece{
         }
         None
     }
-    fn bottom(&self,point:Point)->Option<Point>{
+    fn bottom(&self)->Option<Point>{
+        let point =  self.square().point;
         let bottom = if self.get_props().color==Color::White{
             point.rank -1
         } else{
@@ -211,59 +356,59 @@ pub trait Piece{
         None
     }
     
-    fn top_top_left(&self,point:Point)->Option<Point>{
-        let next = self.top(point);
+    fn top_top_left(&self)->Option<Point>{
+        let next = self.top();
         if let Some(point)=next{
-            return self.top_left(point);
+            return self.top_left();
         }
         None
     }
-    fn top_top_right(&self,point:Point)->Option<Point>{
-        let next = self.top(point);
+    fn top_top_right(&self)->Option<Point>{
+        let next = self.top();
         if let Some(point)=next{
-            return self.top_right(point);
+            return self.top_right();
         }
         None
     }
-    fn right_top_right(&self,point:Point)->Option<Point>{
-        let next = self.right(point);
+    fn right_top_right(&self)->Option<Point>{
+        let next = self.right();
         if let Some(point)=next{
-            return self.top_right(point);
+            return self.top_right();
         }
         None
     }
-    fn right_bottom_right(&self,point:Point)->Option<Point>{
-        let next = self.right(point);
+    fn right_bottom_right(&self)->Option<Point>{
+        let next = self.right();
         if let Some(point)=next{
-            return self.bottom_right(point);
+            return self.bottom_right();
         }
         None
     }
-    fn bottom_bottom_right(&self,point:Point)->Option<Point>{
-        let next = self.bottom(point);
+    fn bottom_bottom_right(&self)->Option<Point>{
+        let next = self.bottom();
         if let Some(point)=next{
-            return self.bottom_right(point);
+            return self.bottom_right();
         }
         None
     }
-    fn bottom_bottom_left(&self,point:Point)->Option<Point>{
-        let next = self.bottom(point);
+    fn bottom_bottom_left(&self)->Option<Point>{
+        let next = self.bottom();
         if let Some(point)=next{
-            return self.bottom_left(point);
+            return self.bottom_left();
         }
         None
     }
-    fn left_bottom_left(&self,point:Point)->Option<Point>{
-        let next = self.left(point);
+    fn left_bottom_left(&self)->Option<Point>{
+        let next = self.left();
         if let Some(point)=next{
-            return self.bottom_left(point);
+            return self.bottom_left();
         }
         None
     }
-    fn left_top_left(&self,point:Point)->Option<Point>{
-        let next = self.left(point);
+    fn left_top_left(&self)->Option<Point>{
+        let next = self.left();
         if let Some(point)=next{
-            return self.top_left(point);
+            return self.top_left();
         }
         None
     }
@@ -308,20 +453,23 @@ impl Piece for King{
         }
     }
 
-    fn moves(&self)->Vec<Point> {
-        let s = self.board.squares.iter()
-        .flat_map(|x|x.iter())
-        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
-        .unwrap();
+    fn square(&self)->&Square{
+        self.board.squares.iter()
+            .flat_map(|x|x.iter())
+            .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+            .unwrap()
+    }
 
-        let mut vec = self.surrounding_points(s.point);
+    fn moves(&self)->Vec<Point> {
+
+        let mut vec = self.surrounding_points();
         if !*self.moved.borrow(){
             vec.extend(self.side_x2());
         }
         vec
     }
 
-    fn points_between(&self,point:Point,point2:Point) -> Vec<Point>{
+    fn points_between(&self,point2:Point) -> Vec<Point>{
         vec![]
     }
 
@@ -365,45 +513,44 @@ impl Piece for Queen{
         }
     }
 
-    // fn available_move(&self)->Vec<Option<Point>> {
-    //     todo!()
-    // }
+    fn square(&self)->&Square{
+        self.board.squares.iter()
+            .flat_map(|x|x.iter())
+            .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+            .unwrap()
+    }
 
 
-    fn moves(&self)->Vec<Point> {
-        let s = self.board.squares.iter()
-        .flat_map(|x|x.iter())
-        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
-        .unwrap();
-    
-        let mut vec = self.top_lefts(s.point);
-        vec.extend(self.tops(s.point));
-        vec.extend(self.top_rights(s.point));
-        vec.extend(self.lefts(s.point));
-        vec.extend(self.rights(s.point));
-        vec.extend(self.bottom_lefts(s.point));
-        vec.extend(self.bottoms(s.point));
-        vec.extend(self.bottom_rights(s.point));
+
+    fn moves(&self)->Vec<Point> {    
+        let mut vec = self.top_lefts();
+        vec.extend(self.tops());
+        vec.extend(self.top_rights());
+        vec.extend(self.lefts());
+        vec.extend(self.rights());
+        vec.extend(self.bottom_lefts());
+        vec.extend(self.bottoms());
+        vec.extend(self.bottom_rights());
         vec
     }
 
-    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
-        let points = if self.tops(point).contains(&point2){
-            self.tops(point)
-        }else if self.top_lefts(point).contains(&point2){
-            self.top_lefts(point)
-        }else if self.top_rights(point).contains(&point2){
-            self.top_rights(point)
-        }else if self.rights(point).contains(&point2){
-            self.rights(point)
-        }else if self.bottom_rights(point).contains(&point2){
-            self.bottom_rights(point)
-        }else if self.bottoms(point).contains(&point2){
-            self.bottoms(point)
-        }else if self.bottom_lefts(point).contains(&point2){
-            self.bottom_lefts(point)
-        }else if self.lefts(point).contains(&point2){
-            self.lefts(point)
+    fn points_between(&self,point2:Point)->Vec<Point> {
+        let points = if self.tops().contains(&point2){
+            self.tops()
+        }else if self.top_lefts().contains(&point2){
+            self.top_lefts()
+        }else if self.top_rights().contains(&point2){
+            self.top_rights()
+        }else if self.rights().contains(&point2){
+            self.rights()
+        }else if self.bottom_rights().contains(&point2){
+            self.bottom_rights()
+        }else if self.bottoms().contains(&point2){
+            self.bottoms()
+        }else if self.bottom_lefts().contains(&point2){
+            self.bottom_lefts()
+        }else if self.lefts().contains(&point2){
+            self.lefts()
         } else{
             vec![]
         };
@@ -447,28 +594,33 @@ impl Piece for Rook{
         }
     }
 
-    fn moves(&self)->Vec<Point> {
-        let s = self.board.squares.iter()
-        .flat_map(|x|x.iter())
-        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
-        .unwrap();
 
-        let mut vec = self.tops(s.point);
-        vec.extend(self.lefts(s.point));
-        vec.extend(self.rights(s.point));
-        vec.extend(self.bottoms(s.point));
+    fn square(&self)->&Square{
+        self.board.squares.iter()
+            .flat_map(|x|x.iter())
+            .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+            .unwrap()
+    }
+
+
+    fn moves(&self)->Vec<Point> {
+
+        let mut vec = self.tops();
+        vec.extend(self.lefts());
+        vec.extend(self.rights());
+        vec.extend(self.bottoms());
         vec
     }
 
-    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
-        let points = if self.tops(point).contains(&point2){
-            self.tops(point)
-        }else if self.rights(point).contains(&point2){
-            self.rights(point)
-        }else if self.bottoms(point).contains(&point2){
-            self.bottoms(point)
-        }else if self.lefts(point).contains(&point2){
-            self.lefts(point)
+    fn points_between(&self,point2:Point)->Vec<Point> {
+        let points = if self.tops().contains(&point2){
+            self.tops()
+        }else if self.rights().contains(&point2){
+            self.rights()
+        }else if self.bottoms().contains(&point2){
+            self.bottoms()
+        }else if self.lefts().contains(&point2){
+            self.lefts()
         } else{
             vec![]
         };
@@ -515,28 +667,34 @@ impl Piece for Bishop{
         }
     }
 
-    fn moves(&self)->Vec<Point> {
-        let s = self.board.squares.iter()
-        .flat_map(|x|x.iter())
-        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
-        .unwrap();
 
-        let mut  vec = self.top_lefts(s.point);
-        vec.extend(self.top_rights(s.point));
-        vec.extend(self.bottom_lefts(s.point));
-        vec.extend(self.bottom_rights(s.point));
+
+    fn square(&self)->&Square{
+        self.board.squares.iter()
+            .flat_map(|x|x.iter())
+            .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+            .unwrap()
+    }
+
+    fn moves(&self)->Vec<Point> {
+
+        let mut  vec = self.top_lefts();
+        vec.extend(self.top_rights());
+        vec.extend(self.bottom_lefts());
+        vec.extend(self.bottom_rights());
         vec
     }
 
-    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
-        let points = if self.top_lefts(point).contains(&point2){
-            self.top_lefts(point)
-        }else if self.top_rights(point).contains(&point2){
-            self.top_rights(point)
-        }else if self.bottom_rights(point).contains(&point2){
-            self.bottom_rights(point)
-        }else if self.bottom_lefts(point).contains(&point2){
-            self.bottom_lefts(point)
+    fn points_between(&self,point2:Point)->Vec<Point> {
+        let point = self.square().point;
+        let points = if self.top_lefts().contains(&point2){
+            self.top_lefts()
+        }else if self.top_rights().contains(&point2){
+            self.top_rights()
+        }else if self.bottom_rights().contains(&point2){
+            self.bottom_rights()
+        }else if self.bottom_lefts().contains(&point2){
+            self.bottom_lefts()
         }else{
             vec![]
         };
@@ -579,26 +737,30 @@ impl Piece for Knight{
         }
     }
 
+
+    fn square(&self)->&Square{
+        self.board.squares.iter()
+            .flat_map(|x|x.iter())
+            .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+            .unwrap()
+    }
+
     fn moves(&self)->Vec<Point> {
-        let s = self.board.squares.iter()
-        .flat_map(|x|x.iter())
-        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
-        .unwrap();
         vec![
-            self.top_top_left(s.point),
-            self.top_top_right(s.point),
-            self.right_top_right(s.point),
-            self.right_bottom_right(s.point),
-            self.bottom_bottom_right(s.point),
-            self.bottom_bottom_left(s.point),
-            self.left_bottom_left(s.point),
-            self.left_top_left(s.point),
+            self.top_top_left(),
+            self.top_top_right(),
+            self.right_top_right(),
+            self.right_bottom_right(),
+            self.bottom_bottom_right(),
+            self.bottom_bottom_left(),
+            self.left_bottom_left(),
+            self.left_top_left(),
         ].iter()
         .filter_map(|x|x.clone())
         .collect()
     }
 
-    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
+    fn points_between(&self,point2:Point)->Vec<Point> {
         vec![]
     }
 
@@ -640,28 +802,30 @@ impl Piece for Pawn{
         }
     }
 
+
+    fn square(&self)->&Square{
+        self.board.squares.iter()
+            .flat_map(|x|x.iter())
+            .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
+            .unwrap()
+    }
+
     fn moves(&self)->Vec<Point> {
-
-        let s = self.board.squares.iter()
-        .flat_map(|x|x.iter())
-        .find(|x|x.piece.borrow().is_some() && x.piece.borrow().as_ref().unwrap().get_props().id==self.id)
-        .unwrap();
-
         let mut vec :Vec<Point> = vec![
-            self.top_left(s.point),
-            self.top_right(s.point),
-            self.top(s.point)
+            self.top_left(),
+            self.top_right(),
+            self.top()
         ].iter()
         .filter_map(|x|x.clone())
         .collect();
 
-        if !*self.moved.borrow(){
-            vec.push(self.top_x2(s.point));
+        if !self.is_moved(){
+            vec.push(self.top_x2());
         }
         vec 
     }
 
-    fn points_between(&self,point:Point,point2:Point)->Vec<Point> {
+    fn points_between(&self,point2:Point)->Vec<Point> {
         vec![]
     }
 
@@ -676,7 +840,8 @@ impl Piece for Pawn{
 
 }
 impl Pawn{
-    fn top_x2(&self, point:Point)->Point{
+    fn top_x2(&self)->Point{
+        let point = self.square().point;
         let top =if self.get_props().color==Color::White{
             point.rank + 2
         }else{

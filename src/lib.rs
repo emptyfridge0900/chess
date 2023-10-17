@@ -66,6 +66,131 @@ impl Point{
     pub fn notation(&self)->String{
         format!("{}{}",self.file,self.rank)
     }
+    pub fn top(&self,color:Color)->Option<Point>{
+        let rank = if color==Color::White{
+            self.rank+1
+        }else{
+            self.rank-1
+        };
+
+        if rank>=1 && rank<=8{
+            Some(Point{file:self.file,rank})
+        } else{
+            None
+        }
+    }
+    pub fn top_left(&self,color:Color)->Option<Point>{
+        let rank = if color==Color::White{
+            self.rank+1
+        }else{
+            self.rank-1
+        };
+        let file = if color == Color::White{
+            (self.file as u8 -1) as char
+        }else{
+            (self.file as u8 +1) as char
+        };
+
+        if file>='a' && file<='h' && rank>=1 && rank<=8{
+            Some(Point::new(file, rank))
+        }else{
+            None
+        }
+
+    }
+    pub fn top_right(&self,color:Color)->Option<Point>{
+        let rank = if color==Color::White{
+            self.rank+1
+        }else{
+            self.rank-1
+        };
+        let file = if color == Color::White{
+            (self.file as u8 +1) as char
+        }else{
+            (self.file as u8 -1) as char
+        };
+        if file>='a' && file<='h' && rank>=1 && rank<=8{
+            Some(Point::new(file, rank))
+        }else{
+            None
+        }
+
+    }
+    pub fn right(&self,color:Color)->Option<Point>{
+        let file = if color == Color::White{
+            (self.file as u8 +1) as char
+        }else{
+            (self.file as u8 -1) as char
+        };
+
+        if file>='a' && file<='h'{
+            Some(Point{file,rank:self.rank})
+        }else{
+            None
+        }
+    }
+    pub fn left(&self,color:Color)->Option<Point>{
+        let file = if color == Color::White{
+            (self.file as u8 -1) as char
+        }else{
+            (self.file as u8 +1) as char
+        };
+
+        if file>='a' && file<='h'{
+            Some(Point{file,rank:self.rank})
+        }else{
+            None
+        }
+    }
+    pub fn bottom(&self,color:Color)->Option<Point>{
+        let rank = if color==Color::White{
+            self.rank-1
+        }else{
+            self.rank+1
+        };
+        
+        if rank>=1 && rank<=8{
+            Some(Point{file:self.file,rank})
+        } else{
+            None
+        }
+    }
+    pub fn bottom_left(&self,color:Color)->Option<Point>{
+        let rank = if color==Color::White{
+            self.rank-1
+        }else{
+            self.rank+1
+        };
+        let file = if color == Color::White{
+            (self.file as u8 -1) as char
+        }else{
+            (self.file as u8 +1) as char
+        };
+        if file>='a' && file<='h' && rank>=1 && rank<=8{
+            Some(Point::new(file, rank))
+        }else{
+            None
+        }
+
+    }
+    pub fn bottom_right(&self,color:Color)->Option<Point>{
+        let rank = if color==Color::White{
+            self.rank-1
+        }else{
+            self.rank+1
+        };
+        let file = if color == Color::White{
+            (self.file as u8 +1) as char
+        }else{
+            (self.file as u8 -1) as char
+        };
+        if file>='a' && file<='h' && rank>=1 && rank<=8{
+            Some(Point::new(file, rank))
+        }else{
+            None
+        }
+
+    }
 }
 
 pub struct Square{
