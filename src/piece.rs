@@ -359,56 +359,56 @@ pub trait Piece{
     fn top_top_left(&self)->Option<Point>{
         let next = self.top();
         if let Some(point)=next{
-            return self.top_left();
+            return point.top_left(self.get_props().color);
         }
         None
     }
     fn top_top_right(&self)->Option<Point>{
         let next = self.top();
         if let Some(point)=next{
-            return self.top_right();
+            return point.top_right(self.get_props().color);
         }
         None
     }
     fn right_top_right(&self)->Option<Point>{
         let next = self.right();
         if let Some(point)=next{
-            return self.top_right();
+            return point.top_right(self.get_props().color);
         }
         None
     }
     fn right_bottom_right(&self)->Option<Point>{
         let next = self.right();
         if let Some(point)=next{
-            return self.bottom_right();
+            return point.bottom_right(self.get_props().color);
         }
         None
     }
     fn bottom_bottom_right(&self)->Option<Point>{
         let next = self.bottom();
         if let Some(point)=next{
-            return self.bottom_right();
+            return point.bottom_right(self.get_props().color);
         }
         None
     }
     fn bottom_bottom_left(&self)->Option<Point>{
         let next = self.bottom();
         if let Some(point)=next{
-            return self.bottom_left();
+            return point.bottom_left(self.get_props().color);
         }
         None
     }
     fn left_bottom_left(&self)->Option<Point>{
         let next = self.left();
         if let Some(point)=next{
-            return self.bottom_left();
+            return point.bottom_left(self.get_props().color);
         }
         None
     }
     fn left_top_left(&self)->Option<Point>{
         let next = self.left();
         if let Some(point)=next{
-            return self.top_left();
+            return point.top_left(self.get_props().color);
         }
         None
     }
@@ -746,6 +746,9 @@ impl Piece for Knight{
     }
 
     fn moves(&self)->Vec<Point> {
+        println!("{:?}",self.top_top_left());
+        println!("{:?}",self.top_top_right());
+        //println!("{:?}",self.right_top_right());
         vec![
             self.top_top_left(),
             self.top_top_right(),
