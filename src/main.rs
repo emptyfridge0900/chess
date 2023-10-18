@@ -51,13 +51,13 @@ impl ChessManager{
                         1|6 => self.piece(Type::Pawn,if rank==1{Color::Black}else{Color::White}),
                         0|7 => match file {
                             0|7=>self.piece(Type::Rook, if rank==0{Color::Black}else{Color::White}),
-                            1|6=>self.piece(Type::Knight, if rank==0{Color::Black}else{Color::White}),
-                            2|5=>self.piece(Type::Bishop, if rank==0{Color::Black}else{Color::White}),
-                            3=>self.piece(Type::Queen, if rank==0{Color::Black}else{Color::White}),
+                            //1|6=>self.piece(Type::Knight, if rank==0{Color::Black}else{Color::White}),
+                            //2|5=>self.piece(Type::Bishop, if rank==0{Color::Black}else{Color::White}),
+                            //3=>self.piece(Type::Queen, if rank==0{Color::Black}else{Color::White}),
                             4=>self.piece(Type::King, if rank==0{Color::Black}else{Color::White}),
-                            _=>unreachable!()
+                            _=>None
                         },
-                        _=>unreachable!(),
+                        _=>None,
                     };
                     *square.piece.borrow_mut()=p;
                 }
@@ -127,14 +127,7 @@ impl ChessManager{
 
     fn start(&mut self){
         
-        let king:Option<Box<dyn Piece>> = Some(Box::new(King::new(Color::White,Rc::clone(&self.board))));
-        // for row in self.board.squares{
-        //     for xyz in row{
-        //         if xyz.piece.borrow().is_some(){
-        //             *xyz.piece.borrow_mut()=(king);
-        //         }
-        //     }
-        // }
+
         self.is_running = true;
         //self.draw_board(Color::White);
 
@@ -274,6 +267,51 @@ impl ChessManager{
     fn en_passant(&self){
         
     }
+
+    fn is_under_check(&self,color:Color)->bool{
+
+        let squares = self.board.get_pieces_by_color(color);
+        let king =squares
+        .iter()
+        .find(|x|x.piece.borrow().as_ref().unwrap().get_props().name==Type::King)
+        .unwrap();
+
+        let enimies = self.board.get_pieces_by_color(if color==Color::White{Color::Black}else{Color::White});
+        
+        let mut is_king_under_check= false;
+        for s in enimies{
+            let points = s.piece.borrow().as_ref().unwrap().moves();
+            if points.contains(&king.point) {
+                is_king_under_check = true;
+                break;
+            }
+        }
+        is_king_under_check
+    }
+    
+    fn is_check_mate(&self,color:Color)->bool{
+        let squares = self.board.get_pieces_by_color(color);
+        let king =squares
+        .iter()
+        .find(|x|x.piece.borrow().as_ref().unwrap().get_props().name==Type::King)
+        .unwrap();
+        let moves =king.piece.borrow().as_ref().unwrap().moves();
+        
+        let enimies = self.board.get_pieces_by_color(if color==Color::White{Color::Black}else{Color::White});
+
+        let mut is_king_under_check= false;
+        'outer: for s in enimies{
+            let points = s.piece.borrow().as_ref().unwrap().moves();
+            for m in moves.iter(){
+                if !points.contains(m) {
+                    is_king_under_check = true;
+                    break 'outer;
+                }
+            }
+        }
+        is_king_under_check
+    }
+
     fn is_castling(&self,square:&Square,square2:&Square)->bool{
         square.piece.borrow().is_some() 
         && square.piece.borrow().as_ref().unwrap().get_props().name==Type::King
