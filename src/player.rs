@@ -9,38 +9,51 @@ pub struct Player{
 
 impl Player{
 
-    pub fn select(&self)->(&Square,&Square){
-        println!("{} player",self.color);
+    pub fn select_piece(&self)->&Square{
         loop{
             println!("Select piece");
             let mut select = String::new();
             std::io::stdin().read_line(&mut select).expect("failed to readline");
-
-            println!("Destination");
-            let mut target= String::new();
-            std::io::stdin().read_line(&mut target).expect("failed to readline");
-
             let src_square =self.board.get_square(&select);
-            let des_square = self.board.get_square(&target);
-            match (src_square,des_square){
-                (Ok(a), Ok(b))=>{
-                    if a.piece.borrow().is_some() && a.piece.borrow().as_ref().unwrap().get_props().color == self.color 
-                    {
-                        if b.piece.borrow().is_none() || b.piece.borrow().as_ref().unwrap().get_props().color != self.color{
-                            return (a,b);
+            match(src_square){
+                Ok(s)=>{
+                    if s.piece.borrow().is_some() {
+                        if s.piece.borrow().as_ref().unwrap().get_props().color == self.color{
+                            return s;
                         }else{
-                            println!("{} is not your piece",b.point.notation());
+                            println!("{} is not your piece",s.point.notation());
                         }
                     }else{
-                        println!("{:?}",a.piece.borrow().is_some());
-                        println!("{} is not your piece",a.point.notation());
+                        continue;
                     }
-                    continue;
                 },
-                (Ok(_), Err(_))=> {println!("retrying"); continue;},
-                (Err(_), Ok(_)) => {println!("retrying"); continue;},
-                (Err(_), Err(_)) => {println!("retrying"); continue;},
-            };
+                Err(e)=>{
+                    println!("{}",e);
+                    continue;
+                }
+            }
+        }
+    }
+
+    pub fn select_moving_point(&self)->&Square{
+        loop{
+            println!("Select point");
+            let mut target = String::new();
+            std::io::stdin().read_line(&mut target).expect("failed to readline");
+            let dest_square =self.board.get_square(&target);
+            match(dest_square){
+                Ok(s)=>{
+                    if s.piece.borrow().is_some() && s.piece.borrow().as_ref().unwrap().get_props().color == self.color{
+                        println!("{} is your piece",s.point.notation());
+                        continue;
+                    }
+                    return s;
+                },
+                Err(e)=>{
+                    println!("{}",e);
+                    continue;
+                }
+            }
         }
     }
 

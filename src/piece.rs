@@ -1,10 +1,11 @@
-use std::{cell::RefCell, rc::Rc, time::SystemTime};
+use std::{cell::RefCell, rc::Rc, time::SystemTime, collections::HashSet};
 
 use crate::{board::Board, Color, Point, Props, Square, Type};
 
 pub trait Piece {
     fn get_props(&self) -> Props;
     fn moves(&self) -> Vec<Point>;
+    fn particular_moves(&self) -> Vec<Point>;
     fn points_between(&self, point: Point) -> Vec<Point>;
     fn is_moved(&self) -> bool;
     fn moved(&self);
@@ -150,6 +151,7 @@ pub trait Piece {
         while let Some(point) = next {
             let s = self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none() {
+                println!("empty");
                 vec.push(point.clone());
                 next = point.right(self.get_props().color)
             } else {
@@ -433,28 +435,46 @@ impl King {
 }
 
 impl King {
-    fn side_x2(&self) -> Vec<Point> {
-        if self.get_props().color == Color::White {
-            vec![Point::new('c', 1), Point::new('g', 1)]
-        } else {
-            vec![Point::new('c', 8), Point::new('g', 8)]
-        }
-    }
+
     fn is_safe(&self,point:&str)->bool{
         let mut is_king_under_check = false;
-        let left = self.board.get_square(point).unwrap();
-        if left.piece.borrow().is_some() && !left.piece.borrow().as_ref().unwrap().is_moved() {
-            let enimies = self.board.get_pieces_by_color(self.color);
-            let points_between = left
+        let rook = self.board.get_square(point).unwrap();
+        if rook.piece.borrow().is_some() && !rook.piece.borrow().as_ref().unwrap().is_moved() {
+            let opponent = self.board.get_pieces_by_color(if self.color==Color::White{Color::Black}else{Color::White});
+            let rook_moves = rook
                 .piece
                 .borrow()
                 .as_ref()
                 .unwrap()
-                .points_between(self.square().point);
-            'outer: for s in enimies {
-                let points = s.piece.borrow().as_ref().unwrap().moves();
-                for m in points_between.iter() {
-                    if !points.contains(m) {
+                .moves();
+            let king_moves = self.moves();
+            let rook_set: HashSet<_> = rook_moves.iter().copied().collect();   
+            let reachable = king_moves.iter().all(|item| rook_set.contains(item));
+            if !reachable{
+                return false;
+            }
+            let points = if (rook.point.file =='a' && self.color==Color::White)
+            || (rook.point.file =='h' && self.color==Color::Black)
+            {
+                vec![
+                    self.square().point,
+                    self.square().point.left(self.color).unwrap(),
+                    self.square().point.left(self.color).unwrap().left(self.color).unwrap(),
+                ]
+            }else{
+                vec![
+                    self.square().point,
+                    self.square().point.right(self.color).unwrap(),
+                    self.square().point.right(self.color).unwrap().right(self.color).unwrap(),
+                ]                
+            };
+
+
+              
+            'outer: for s in opponent {
+                let moves = s.piece.borrow().as_ref().unwrap().moves();
+                for m in points.iter() {
+                    if !moves.contains(m) {
                         is_king_under_check = true;
                         break 'outer;
                     }
@@ -515,24 +535,30 @@ impl Piece for King {
             }
         })
         .collect();
+        vec
+    }
+
+    fn particular_moves(&self) -> Vec<Point> {
+        let mut vec: Vec<Point> = vec![];
         if !*self.moved.borrow() {
             if self.color == Color::White {
                 if self.is_safe("a1"){
-                    vec.push(self.square().point.left(self.color).unwrap());
+                    println!("a1 is safe");
+                    vec.push(self.square().point.left(self.color).unwrap().left(self.color).unwrap());
                 }
                 if self.is_safe("h1"){
-                    vec.push(self.square().point.right(self.color).unwrap());                    
+                    println!("h1 is safe");
+                    vec.push(self.square().point.right(self.color).unwrap().right(self.color).unwrap());                    
                 }
             } else {
                 if self.is_safe("h8"){
-                    vec.push(self.square().point.left(self.color).unwrap());
+                    vec.push(self.square().point.left(self.color).unwrap().left(self.color).unwrap());
                 }
                 if self.is_safe("a8"){
-                    vec.push(self.square().point.right(self.color).unwrap());                    
+                    vec.push(self.square().point.right(self.color).unwrap().right(self.color).unwrap());                    
                 }
             }
         }
-
         vec
     }
 
@@ -553,6 +579,8 @@ impl Piece for King {
     fn board(&self) -> &Board {
         &self.board
     }
+
+    
 }
 
 pub struct Queen {
@@ -631,6 +659,9 @@ impl Piece for Queen {
         };
         points.into_iter().take_while(|x| x != &point2).collect()
     }
+    fn particular_moves(&self) -> Vec<Point> {
+        vec![]
+    }
 
     fn is_moved(&self) -> bool {
         *self.moved.borrow()
@@ -643,6 +674,8 @@ impl Piece for Queen {
     fn board(&self) -> &Board {
         &self.board
     }
+
+    
 }
 pub struct Rook {
     id: u128,
@@ -692,6 +725,10 @@ impl Piece for Rook {
         vec.extend(self.rights());
         vec.extend(self.bottoms());
         vec
+    }
+
+    fn particular_moves(&self) -> Vec<Point> {
+        vec![]
     }
 
     fn points_between(&self, point2: Point) -> Vec<Point> {
@@ -770,6 +807,10 @@ impl Piece for Bishop {
         vec.extend(self.bottom_lefts());
         vec.extend(self.bottom_rights());
         vec
+    }
+
+    fn particular_moves(&self) -> Vec<Point> {
+        vec![]
     }
 
     fn points_between(&self, point2: Point) -> Vec<Point> {
@@ -874,6 +915,10 @@ impl Piece for Knight {
         .collect()
     }
 
+    fn particular_moves(&self) -> Vec<Point> {
+        vec![]
+    }
+
     fn points_between(&self, point2: Point) -> Vec<Point> {
         vec![]
     }
@@ -952,13 +997,19 @@ impl Piece for Pawn {
                 vec.push(p);
             }
         }
+        
+
+        vec
+    }
+
+    fn particular_moves(&self) -> Vec<Point> {
+        let mut vec: Vec<Point> = vec![];
         if !self.is_moved() {
             let s = self.board.get_square(&self.top_x2().notation()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(self.top_x2());
             }
         }
-
         vec
     }
 

@@ -53,7 +53,7 @@ impl Props{
     }
 }
 
-#[derive(Clone,Copy,Debug,PartialEq, Eq)]
+#[derive(Clone,Copy,Debug,PartialEq, Eq,Hash)]
 pub struct Point{
     pub file:char,
     pub rank:u32
