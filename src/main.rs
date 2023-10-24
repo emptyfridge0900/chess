@@ -167,7 +167,14 @@ impl ChessManager {
         while self.is_running {
             let mut valid = false;
 
-            while !valid {
+            //while !valid {
+                if self.is_under_check(Color::White){
+                    if self.is_check_mate(Color::White){
+                        self.stop();
+                        break;
+                    }
+                    println!("you are under check");
+                }
                 self.draw_board(Color::White);
                 let square = self.player1.select_piece();
 
@@ -176,6 +183,10 @@ impl ChessManager {
                 println!("{:?}", moves);
 
                 let square2 = self.player1.select_moving_point();
+                if !moves.contains(&square2.point){
+                    println!("Invalid!");
+                    continue;
+                }
 
                 if self.is_castling(square, square2) {
                     let n = self.convert(
@@ -206,7 +217,7 @@ impl ChessManager {
                         self.promotion(square2)
                     }
                 }
-            }
+            //}
 
             for record in white_record.iter() {
                 println!("{:?}", record);

@@ -151,7 +151,6 @@ pub trait Piece {
         while let Some(point) = next {
             let s = self.board().get_square(&point.notation()).unwrap();
             if s.piece.borrow().is_none() {
-                println!("empty");
                 vec.push(point.clone());
                 next = point.right(self.get_props().color)
             } else {
@@ -449,7 +448,7 @@ impl King {
                 .moves();
             let king_moves = self.moves();
             let rook_set: HashSet<_> = rook_moves.iter().copied().collect();   
-            let reachable = king_moves.iter().all(|item| rook_set.contains(item));
+            let reachable = king_moves.iter().any(|item| rook_set.contains(item));
             if !reachable{
                 return false;
             }
@@ -543,11 +542,9 @@ impl Piece for King {
         if !*self.moved.borrow() {
             if self.color == Color::White {
                 if self.is_safe("a1"){
-                    println!("a1 is safe");
                     vec.push(self.square().point.left(self.color).unwrap().left(self.color).unwrap());
                 }
                 if self.is_safe("h1"){
-                    println!("h1 is safe");
                     vec.push(self.square().point.right(self.color).unwrap().right(self.color).unwrap());                    
                 }
             } else {
