@@ -5,7 +5,7 @@ use std::{
 };
 
 use chess::{
-    board::Board,
+    board::{Board, Record},
     error,
     piece::{Bishop, King, Knight, Pawn, Piece, Queen, Rook},
     player::Player,
@@ -18,11 +18,7 @@ fn main() {
     manager.start();
 }
 
-struct Record {
-    name: Type,
-    src: Point,
-    des: Point,
-}
+
 struct ChessManager {
     board: Rc<Board>,
     is_running: bool,
@@ -79,9 +75,9 @@ impl ChessManager {
                                     Color::White
                                 },
                             ),
-                            //1|6=>self.piece(Type::Knight, if rank==0{Color::Black}else{Color::White}),
-                            //2|5=>self.piece(Type::Bishop, if rank==0{Color::Black}else{Color::White}),
-                            //3=>self.piece(Type::Queen, if rank==0{Color::Black}else{Color::White}),
+                            1|6=>self.piece(Type::Knight, if rank==0{Color::Black}else{Color::White}),
+                            2|5=>self.piece(Type::Bishop, if rank==0{Color::Black}else{Color::White}),
+                            3=>self.piece(Type::Queen, if rank==0{Color::Black}else{Color::White}),
                             4 => self.piece(
                                 Type::King,
                                 if rank == 0 {
@@ -100,8 +96,8 @@ impl ChessManager {
         }
     }
 
-    fn convert(&self, color: Color, name: Type, src: Point, des: Point) -> String {
-        let n = match name {
+    fn convert(&self, record:Record) -> String {
+        let n = match record.name {
             Type::King => 'K',
             Type::Queen => 'Q',
             Type::Rook => 'R',
@@ -110,17 +106,17 @@ impl ChessManager {
             Type::Pawn => ' ',
         };
 
-        let pieces = self.board.get_pieces_by_color(color);
+        let pieces = self.board.get_pieces_by_color(record.color);
         let notation = pieces
             .iter()
-            .filter(|x| x.piece.borrow().as_ref().unwrap().get_props().name == name)
+            .filter(|x| x.piece.borrow().as_ref().unwrap().get_props().name == record.name)
             .map(|x| {
                 let m = x.piece.borrow();
                 let p = m.as_ref().unwrap();
-                if p.get_props().name == name && x.point != src {
+                if p.get_props().name == record.name && x.point != record.src {
                     //same piece but different point
                     let points = p.moves();
-                    if points.contains(&des)
+                    if points.contains(&record.dst)
                     //&& !self.is_blocked(x.point, des)
                     {
                         Some(x.point)
@@ -135,11 +131,11 @@ impl ChessManager {
                 let notation = if x.is_some() {
                     let p = x.unwrap();
                     let mut r = String::new();
-                    if src.rank == p.rank {
-                        r.push_str(&src.file.to_string());
+                    if record.src.rank == p.rank {
+                        r.push_str(&record.src.file.to_string());
                     }
-                    if src.file == p.file {
-                        r.push_str(&src.rank.to_string());
+                    if record.src.file == p.file {
+                        r.push_str(&record.src.rank.to_string());
                     }
                     r
                 } else {
@@ -153,10 +149,13 @@ impl ChessManager {
         if notation.is_some() {
             result.push_str(&notation.unwrap());
         }
-        result.push_str(&des.notation());
+        result.push_str(&record.dst.notation());
         result
     }
 
+    fn turn(&self, color:Color){
+        
+    }
     fn start(&mut self) {
         self.is_running = true;
         //self.draw_board(Color::White);
@@ -188,35 +187,30 @@ impl ChessManager {
                     continue;
                 }
 
-                if self.is_castling(square, square2) {
-                    let n = self.convert(
+                let record = Record::new(
                         Color::White,
                         square.piece.borrow().as_ref().unwrap().get_props().name,
                         square.point,
-                        square2.point,
+                        square2.point
                     );
-                    white_record.push(n);
+                if self.is_castling(square, square2) {
                     self.castling(square, square2);
                     continue;
                 } else if self.is_en_passant(square, square2) {
-                    self.en_passant();
+                    self.en_passant(square, square2);
                     continue;
                 } else {
-                    let n = self.convert(
-                        Color::White,
-                        square.piece.borrow().as_ref().unwrap().get_props().name,
-                        square.point,
-                        square2.point,
-                    );
-                    white_record.push(n);
-
                     let mut piece = self.board.takes(square.point);
                     piece = self.board.replace(square2.point, piece);
+
                     //promotion
                     if self.is_promotion(square2) {
                         self.promotion(square2)
                     }
                 }
+                let n = self.convert(record.clone());
+                white_record.push(n);
+                self.board.add_record(record.clone());
             //}
 
             for record in white_record.iter() {
@@ -231,7 +225,6 @@ impl ChessManager {
     fn stop(&mut self) {
         self.is_running = false;
     }
-
 
     fn is_promotion(&self, square: &Square) -> bool {
         if square.piece.borrow().as_ref().unwrap().get_props().name == Type::Pawn {
@@ -248,6 +241,7 @@ impl ChessManager {
         }
         false
     }
+
     fn promotion(&self, square: &Square) {
         let color = square.piece.borrow().as_ref().unwrap().get_props().color;
         let mut pick = String::new();
@@ -263,22 +257,54 @@ impl ChessManager {
         };
         *square.piece.borrow_mut() = piece
     }
+
     fn is_en_passant(&self, square: &Square, square2: &Square) -> bool {
         if square.piece.borrow().is_some() {
+            let props = square.piece.borrow().as_ref().unwrap().get_props();
             if square.point.rank == 5
-                && square.piece.borrow().as_ref().unwrap().get_props().color == Color::White
+            && props.color == Color::White
+            && props.name == Type::Pawn
             {
+                if let Some(top_left)=square.point.top_left(props.color){
+                    if top_left == square2.point && square2.piece.borrow().is_none(){
+                        return true;
+                    }
+                }
+                if let Some(top_right)=square.point.top_right(props.color){
+                    if top_right == square2.point && square2.piece.borrow().is_none(){
+                        return true;
+                    }
+                }
             }
 
             if square.point.rank == 4
-                && square.piece.borrow().as_ref().unwrap().get_props().color == Color::Black
+            && props.color == Color::Black
+            && props.name == Type::Pawn
             {
+                if let Some(top_left)=square.point.top_left(props.color){
+                    if top_left == square2.point && square2.piece.borrow().is_none(){
+                        return true;
+                    }
+                }
+                if let Some(top_right)=square.point.top_right(props.color){
+                    if top_right == square2.point && square2.piece.borrow().is_none(){
+                        return true;
+                    }
+                }
             }
         }
 
         false
     }
-    fn en_passant(&self) {}
+
+    fn en_passant(&self,square: &Square, square2: &Square) {
+        let p = Point::new(square2.point.file, square.point.rank);
+        self.board.takes(p);
+
+        let mut piece = self.board.takes(square.point);
+        piece = self.board.replace(square2.point, piece);
+
+    }
 
     fn is_under_check(&self, color: Color) -> bool {
         let squares = self.board.get_pieces_by_color(color);
@@ -337,6 +363,7 @@ impl ChessManager {
             && square2.piece.borrow().is_none()
             && (square.point.file as u8).abs_diff(square2.point.file as u8) == 2
     }
+
     fn castling(&self, square: &Square, square2: &Square) {
         let rook = if square2.point.file > 'e' {
             if square.piece.borrow().as_ref().unwrap().get_props().color == Color::White {
@@ -359,10 +386,6 @@ impl ChessManager {
         let p = Point::new(file, rook.point.rank);
         piece = self.board.takes(rook.point);
         piece = self.board.replace(p, piece);
-    }
-
-    fn pomotion(&self) -> bool {
-        false
     }
 
 

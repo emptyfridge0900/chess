@@ -163,79 +163,6 @@ pub trait Piece {
         vec
     }
 
-    // fn top_lefts(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point> =vec![];
-    //     let mut next = self.top_left();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next = self.top_left();
-    //     }
-    //     vec
-    // }
-    // fn tops(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point> =vec![];
-    //     let mut next = self.top();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next = self.top();
-    //     }
-    //     vec
-    // }
-    // fn top_rights(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point> =vec![];
-    //     let mut next = self.top_right();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next = self.top_right();
-    //     }
-    //     vec
-    // }
-    // fn lefts(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point> =vec![];
-    //     let mut next = self.left();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next = self.left();
-    //     }
-    //     vec
-    // }
-    // fn rights(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point> =vec![];
-    //     let mut next = self.right();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next=self.right();
-    //     }
-    //     vec
-    // }
-    // fn bottom_lefts(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point>=vec![];
-    //     let mut next = self.bottom_left();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next = self.bottom_left();
-    //     }
-    //     vec
-    // }
-    // fn bottoms(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point> =vec![];
-    //     let mut next = self.bottom();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next = self.bottom();
-    //     }
-    //     vec
-    // }
-    // fn bottom_rights(&self)->Vec<Point>{
-    //     let mut vec:Vec<Point> =vec![];
-    //     let mut next = self.bottom_right();
-    //     while let Some(point) = next{
-    //         vec.push(point.clone());
-    //         next = self.bottom_right();
-    //     }
-    //     vec
-    // }
-
     fn top_right(&self) -> Option<Point> {
         let point = self.square().point;
         let right = if self.get_props().color == Color::White {
@@ -994,19 +921,78 @@ impl Piece for Pawn {
                 vec.push(p);
             }
         }
-        
 
         vec
     }
 
     fn particular_moves(&self) -> Vec<Point> {
         let mut vec: Vec<Point> = vec![];
+
         if !self.is_moved() {
             let s = self.board.get_square(&self.top_x2().notation()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(self.top_x2());
             }
         }
+
+        if self.square().point.rank == 5 && self.color == Color::White
+        {
+            let left = self.square().point.left(self.color);
+            if let Some(side) = left{
+                if let Some(last_record) = self.board.record.borrow().last(){
+                    if last_record.src.rank==7 
+                    && last_record.dst==side
+                    && last_record.name== Type::Pawn
+                    && last_record.color==Color::Black 
+                    {
+                        vec.push(self.square().point.top_left(self.color).unwrap());
+                    }
+                }
+            }
+
+            let right = self.square().point.right(self.color);
+            if let Some(side) = right{
+                if let Some(last_record) = self.board.record.borrow().last(){
+                    if last_record.src.rank==7 
+                    && last_record.dst==side
+                    && last_record.name== Type::Pawn
+                    && last_record.color==Color::Black 
+                    {
+                        vec.push(self.square().point.top_right(self.color).unwrap());
+                    }
+                }
+            }
+        }
+
+        if self.square().point.rank == 4 && self.color == Color::Black
+        {
+            let left = self.square().point.left(self.color);
+            if let Some(side) = left{
+                if let Some(last_record) = self.board.record.borrow().last(){
+                    if last_record.src.rank==2 
+                    && last_record.dst==side
+                    && last_record.name== Type::Pawn
+                    && last_record.color==Color::Black 
+                    {
+                        vec.push(self.square().point.top_left(self.color).unwrap());
+                    }
+                }
+            }
+
+            let right = self.square().point.right(self.color);
+            if let Some(side) = right{
+                if let Some(last_record) = self.board.record.borrow().last(){
+                    if last_record.src.rank==2
+                    && last_record.dst==side
+                    && last_record.name== Type::Pawn
+                    && last_record.color==Color::Black 
+                    {
+                        vec.push(self.square().point.top_right(self.color).unwrap());
+                    }
+                }
+            }            
+        }
+
         vec
     }
 

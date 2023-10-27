@@ -2,13 +2,31 @@ use std::{cell::RefCell, borrow::BorrowMut};
 
 use crate::{Square, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, Color, Point, Type, Props, error};
 
-
+#[derive(Clone)]
+pub struct Record {
+    pub color:Color,
+    pub name: Type,
+    pub src: Point,
+    pub dst: Point,
+}
+impl Record{
+    pub fn new(color:Color,name:Type,src:Point,dst:Point)->Record{
+        Record{
+            color,
+            name,
+            src,
+            dst
+        }
+    }
+}
 pub struct Board{
-    pub squares:[[Square; 8]; 8]
+    pub squares:[[Square; 8]; 8],
+    pub record:RefCell<Vec<Record>>
 }
 impl Board{
     pub fn new()->Board{
-    Board{ 
+    Board{
+        record:RefCell::new(vec![]), 
         squares : [
         [
             Square::new(RefCell::new(None),Point::new('a',8)),
@@ -93,6 +111,10 @@ impl Board{
 
         ]
     }
+    }
+
+    pub fn add_record(&self,record:Record){
+        self.record.borrow_mut().push(record);
     }
 
     pub fn takes(&self, point:Point)->Option<Box<dyn Piece>>{
