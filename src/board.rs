@@ -2,7 +2,7 @@ use std::{cell::RefCell, borrow::BorrowMut};
 
 use crate::{Square, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, Color, Point, Type, Props, error};
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct Record {
     pub color:Color,
     pub name: Type,

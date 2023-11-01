@@ -972,7 +972,7 @@ impl Piece for Pawn {
                     if last_record.src.rank==2 
                     && last_record.dst==side
                     && last_record.name== Type::Pawn
-                    && last_record.color==Color::Black 
+                    && last_record.color==Color::White 
                     {
                         vec.push(self.square().point.top_left(self.color).unwrap());
                     }
@@ -985,7 +985,7 @@ impl Piece for Pawn {
                     if last_record.src.rank==2
                     && last_record.dst==side
                     && last_record.name== Type::Pawn
-                    && last_record.color==Color::Black 
+                    && last_record.color==Color::White 
                     {
                         vec.push(self.square().point.top_right(self.color).unwrap());
                     }
