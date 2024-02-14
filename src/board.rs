@@ -3,25 +3,27 @@ use std::{cell::RefCell, borrow::BorrowMut};
 use crate::{Square, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, Color, Point, Type, Props, error};
 
 #[derive(Clone,Debug)]
-pub struct Record {
+pub struct Notation {
     pub color:Color,
+    pub mov:u128,
     pub name: Type,
     pub src: Point,
     pub dst: Point,
 }
-impl Record{
-    pub fn new(color:Color,name:Type,src:Point,dst:Point)->Record{
-        Record{
+impl Notation{
+    pub fn new(color:Color,mov:u128,name:Type,src:Point,dst:Point)->Notation{
+        Notation{
             color,
+            mov,
             name,
             src,
-            dst
+            dst,
         }
     }
 }
 pub struct Board{
     pub squares:[[Square; 8]; 8],
-    pub record:RefCell<Vec<Record>>
+    pub record:RefCell<Vec<Notation>>
 }
 impl Board{
     pub fn new()->Board{
@@ -113,7 +115,7 @@ impl Board{
     }
     }
 
-    pub fn add_record(&self,record:Record){
+    pub fn add_record(&self,record:Notation){
         self.record.borrow_mut().push(record);
     }
 

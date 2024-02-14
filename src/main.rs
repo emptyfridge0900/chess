@@ -5,7 +5,7 @@ use std::{
 };
 
 use chess::{
-    board::{Board, Record},
+    board::{Board, Notation},
     error,
     piece::{Bishop, King, Knight, Pawn, Piece, Queen, Rook},
     player::{Player, self},
@@ -31,10 +31,26 @@ enum Status {
     ChechMate,
 
 }
-
+struct Record{
+    pub count: u128,
+    pub notations:Vec<Notation>
+}
+impl Record{
+    fn new()->Record{
+        Record{
+            count:0,
+            notations:vec![]
+        }
+    }
+    fn increament(&mut self){
+        self.count+=1;
+    }
+}
 struct ChessManager {
     board: Rc<Board>,
     is_running: bool,
+    white_record:RefCell<Record>,
+    black_record:RefCell<Record>
 }
 impl ChessManager {
     fn new() -> ChessManager {
@@ -42,6 +58,8 @@ impl ChessManager {
         ChessManager {
             board: Rc::clone(&board),
             is_running: false,
+            white_record:RefCell::new(Record::new()),
+            black_record:RefCell::new(Record::new())
 
         }
     }
@@ -121,7 +139,7 @@ impl ChessManager {
         }
     }
 
-    fn convert(&self, record: Record) -> String {
+    fn convert(&self, record: Notation) -> String {
         let n = match record.name {
             Type::King => 'K',
             Type::Queen => 'Q',
@@ -170,12 +188,17 @@ impl ChessManager {
             })
             .reduce(|acc, e| if acc.len() > e.len() { acc } else { e });
 
-        let mut result = n.to_string();
+        let mut result = record.mov.to_string();
+        result.push(n);
         if notation.is_some() {
             result.push_str(&notation.unwrap());
         }
         result.push_str(&record.dst.notation());
         result
+    }
+
+    fn replay(&self,white_notations:Vec<String>,black_notations:Vec<String>){
+
     }
 
     fn start(&mut self,player1:Player,player2:Player) {
@@ -197,6 +220,7 @@ impl ChessManager {
                 }
                 println!("you are under check");
             }
+
             let (square,square2) =self.turn(&player);
             let record = self.judge(&player, square, square2);
             self.board.add_record(record.clone());
@@ -213,13 +237,11 @@ impl ChessManager {
                 &player1
             };
 
-            // for record in white_record.iter() {
-            //     println!("{:?}", record);
-            // }
 
             for record in std::iter::zip(white_record.iter(), black_record.iter()) {
                 println!("{}|{}", record.0, record.1);
             }
+
         }
     }
 
@@ -248,13 +270,20 @@ impl ChessManager {
 
     }
 
-    fn judge(&self,player:&Player, square:&Square,square2: &Square)->Record{
-        let record = Record::new(
+    fn judge(&self,player:&Player, square:&Square,square2: &Square)->Notation{
+        if player.color==Color::White{
+            self.white_record.borrow_mut().increament();
+        }else{
+            self.black_record.borrow_mut().increament();
+        }
+        let record = Notation::new(
             player.color,
+            if player.color==Color::White{self.white_record.borrow().count}else{self.black_record.borrow().count},
             square.piece.borrow().as_ref().unwrap().get_props().name,
             square.point,
             square2.point,
         );
+
         if self.is_castling(square, square2) {
             self.castling(square, square2);
         } else if self.is_en_passant(square, square2) {
@@ -268,7 +297,6 @@ impl ChessManager {
                 self.promotion(square2)
             }
         }
-        
         record
     }
 
