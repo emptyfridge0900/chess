@@ -1,59 +1,60 @@
+use std::error;
 use std::{
     borrow::BorrowMut,
     cell::{Ref, RefCell},
+    fmt::Error,
     rc::Rc,
 };
 
 use chess::{
     board::{Board, Notation},
-    error,
+    error::InvalidateInutError,
     piece::{Bishop, King, Knight, Pawn, Piece, Queen, Rook},
-    player::{Player, self},
+    player::{self, Player},
     Color, Point, Props, Square, Type,
 };
 use regex::Regex;
 fn main() {
     let mut manager = ChessManager::new();
     let player1 = Player {
-                board: Rc::clone(&manager.board),
-                color: Color::White,
-            };
+        board: Rc::clone(&manager.board),
+        color: Color::White,
+    };
     let player2 = Player {
-                board: Rc::clone(&manager.board),
-                color: Color::Black,
-            };
+        board: Rc::clone(&manager.board),
+        color: Color::Black,
+    };
     manager.settting();
-    manager.start(player1,player2);
+    manager.start(player1, player2);
 }
 
 enum Status {
     Check,
     ChechMate,
-
 }
-struct Record{
+struct Record {
     pub count: u128,
-    pub notations:Vec<Notation>
+    pub notations: Vec<Notation>,
 }
-impl Record{
-    fn new()->Record{
-        Record{
-            count:0,
-            notations:vec![]
+impl Record {
+    fn new() -> Record {
+        Record {
+            count: 0,
+            notations: vec![],
         }
     }
-    fn increament(&mut self){
-        self.count+=1;
+    fn increament(&mut self) {
+        self.count += 1;
     }
-    fn add_record(&mut self,value: Notation){
+    fn add_record(&mut self, value: Notation) {
         self.notations.push(value)
     }
 }
 struct ChessManager {
     board: Rc<Board>,
     is_running: bool,
-    white_record:RefCell<Record>,
-    black_record:RefCell<Record>
+    white_record: RefCell<Record>,
+    black_record: RefCell<Record>,
 }
 impl ChessManager {
     fn new() -> ChessManager {
@@ -61,9 +62,8 @@ impl ChessManager {
         ChessManager {
             board: Rc::clone(&board),
             is_running: false,
-            white_record:RefCell::new(Record::new()),
-            black_record:RefCell::new(Record::new())
-
+            white_record: RefCell::new(Record::new()),
+            black_record: RefCell::new(Record::new()),
         }
     }
 
@@ -83,13 +83,55 @@ impl ChessManager {
             for (file, square) in row.iter().enumerate() {
                 if rank == 0 || rank == 1 || rank == 6 || rank == 7 {
                     let p = match rank {
-                        1 | 6 => self.piece(Type::Pawn,if rank == 1 {Color::Black} else {Color::White}),
+                        1 | 6 => self.piece(
+                            Type::Pawn,
+                            if rank == 1 {
+                                Color::Black
+                            } else {
+                                Color::White
+                            },
+                        ),
                         0 | 7 => match file {
-                            0 | 7 => self.piece(Type::Rook,if rank == 0 {Color::Black} else {Color::White}),
-                            1 | 6 => self.piece(Type::Knight,if rank == 0 {Color::Black} else {Color::White}),
-                            2 | 5 => self.piece(Type::Bishop,if rank == 0 {Color::Black} else {Color::White}),
-                            3 => self.piece( Type::Queen,if rank == 0 {Color::Black} else {Color::White}),
-                            4 => self.piece(Type::King,if rank == 0 {Color::Black} else {Color::White}),
+                            0 | 7 => self.piece(
+                                Type::Rook,
+                                if rank == 0 {
+                                    Color::Black
+                                } else {
+                                    Color::White
+                                },
+                            ),
+                            1 | 6 => self.piece(
+                                Type::Knight,
+                                if rank == 0 {
+                                    Color::Black
+                                } else {
+                                    Color::White
+                                },
+                            ),
+                            2 | 5 => self.piece(
+                                Type::Bishop,
+                                if rank == 0 {
+                                    Color::Black
+                                } else {
+                                    Color::White
+                                },
+                            ),
+                            3 => self.piece(
+                                Type::Queen,
+                                if rank == 0 {
+                                    Color::Black
+                                } else {
+                                    Color::White
+                                },
+                            ),
+                            4 => self.piece(
+                                Type::King,
+                                if rank == 0 {
+                                    Color::Black
+                                } else {
+                                    Color::White
+                                },
+                            ),
                             _ => None,
                         },
                         _ => None,
@@ -120,7 +162,11 @@ impl ChessManager {
                 if p.get_props().name == record.name && x.point != record.src {
                     //same piece but different point
                     let points = p.moves();
-                    if points.contains(&record.dst){Some(x.point)} else {None}
+                    if points.contains(&record.dst) {
+                        Some(x.point)
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -153,11 +199,9 @@ impl ChessManager {
         result
     }
 
-    fn replay(&self,white_notations:Vec<String>,black_notations:Vec<String>){
+    fn replay(&self, white_notations: Vec<String>, black_notations: Vec<String>) {}
 
-    }
-
-    fn start(&mut self,player1:Player,player2:Player) {
+    fn start(&mut self, player1: Player, player2: Player) {
         self.is_running = true;
         //self.draw_board(Color::White);
 
@@ -167,7 +211,6 @@ impl ChessManager {
         let mut current_color = Color::White;
         let mut player = &player1;
         while self.is_running {
-
             if self.is_under_check(player.color) {
                 if self.is_check_mate(player.color) {
                     println!("Checkmate");
@@ -177,36 +220,33 @@ impl ChessManager {
                 println!("you are under check");
             }
 
-            let (square,square2) =self.turn(&player);
+            let (square, square2) = self.turn(&player);
             let record = self.judge(&player, square, square2);
             self.board.add_record(record.clone());
 
-            for nn in self.board.record.borrow().iter(){
-                println!("{:?}",nn);
+            for nn in self.board.record.borrow().iter() {
+                println!("{:?}", nn);
             }
 
             let notation = self.convert(record.clone());
-            player = if current_color==Color::White{
+            player = if current_color == Color::White {
                 white_record.push(notation);
-                current_color=Color::Black;
+                current_color = Color::Black;
                 &player2
-            } else{
+            } else {
                 black_record.push(notation);
-                current_color=Color::White;
+                current_color = Color::White;
                 &player1
             };
 
             for record in std::iter::zip(white_record.iter(), black_record.iter()) {
                 println!("{}|{}", record.0, record.1);
             }
-
         }
     }
 
-    fn turn<'a>(&self, player: &'a Player)->(&'a Square,&'a Square) {
-
-        let result = loop{
-        
+    fn turn<'a>(&self, player: &'a Player) -> (&'a Square, &'a Square) {
+        let result = loop {
             self.draw_board(player.color);
             let square = player.select_piece();
 
@@ -218,25 +258,67 @@ impl ChessManager {
             if !moves.contains(&square2.point) {
                 println!("Invalid!");
                 continue;
-            } else{
-                break (square,square2);
+            } else {
+                break (square, square2);
             }
-
         };
-
         result
-
+    }
+    fn get_possible_moves(&self, color: Color,selection:&str)->Result<Vec<Point>,String>{
+        match self.get_square(color, selection){
+            Ok(square)=>{
+                let mut moves: Vec<Point> = square.moves();
+                moves.extend(square.particular_moves());
+                Result::Ok(moves)
+            },
+            Err(e)=>Result::Err("hello".to_owned())
+        }
+    }
+    fn is_valid_move(&self,color:Color,selection:&str,moves:Vec<Point>)->bool{
+        match self.get_square(color, selection){
+            Ok(square)=>{
+                if !moves.contains(&square.point) {
+                    false
+                } else {
+                    true
+                }
+            },
+            Err(e)=> false
+        }
     }
 
-    fn judge(&self,player:&Player, square:&Square,square2: &Square)->Notation{
-        if player.color==Color::White{
+    fn get_square(&self, color: Color, selection: &str) -> Result<&Square, Box<dyn error::Error>> {
+        let src_square = self.board.get_square(&selection);
+        match src_square {
+            Ok(s) => {
+                if s.piece.borrow().is_some() {
+                    if s.props().color == color {
+                        return Result::Ok(s);
+                    } else {
+                        Result::Err(Box::new(InvalidateInutError))
+                    }
+                } else {
+                    Result::Err(Box::new(InvalidateInutError))
+                }
+            }
+            Err(e) => Err(Box::new(e)),
+        }
+    }
+
+
+    fn judge(&self, player: &Player, square: &Square, square2: &Square) -> Notation {
+        if player.color == Color::White {
             self.white_record.borrow_mut().increament();
-        }else{
+        } else {
             self.black_record.borrow_mut().increament();
         }
         let record = Notation::new(
             player.color,
-            if player.color==Color::White{self.white_record.borrow().count}else{self.black_record.borrow().count},
+            if player.color == Color::White {
+                self.white_record.borrow().count
+            } else {
+                self.black_record.borrow().count
+            },
             square.piece.borrow().as_ref().unwrap().get_props().name,
             square.point,
             square2.point,
@@ -264,8 +346,12 @@ impl ChessManager {
 
     fn is_promotion(&self, square: &Square) -> bool {
         if square.props().name == Type::Pawn {
-            if square.point.rank == 8 && square.props().color == Color::White{return true;}
-            if square.point.rank == 1 && square.props().color == Color::Black{return true;}
+            if square.point.rank == 8 && square.props().color == Color::White {
+                return true;
+            }
+            if square.point.rank == 1 && square.props().color == Color::Black {
+                return true;
+            }
         }
         false
     }
