@@ -37,7 +37,7 @@ pub trait Piece {
                 vec.push(point.clone());
                 next = point.top_left(self.get_props().color)
             } else {
-                if s.piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color {
+                if s.props().color != self.get_props().color {
                     vec.push(point.clone());
                 }
                 next = None
@@ -54,7 +54,7 @@ pub trait Piece {
                 vec.push(point.clone());
                 next = point.top(self.get_props().color)
             } else {
-                if s.piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color {
+                if s.props().color != self.get_props().color {
                     vec.push(point.clone());
                 }
                 next = None
@@ -71,7 +71,7 @@ pub trait Piece {
                 vec.push(point.clone());
                 next = point.top_right(self.get_props().color)
             } else {
-                if s.piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color {
+                if s.props().color != self.get_props().color {
                     vec.push(point.clone());
                 }
                 next = None
@@ -103,7 +103,7 @@ pub trait Piece {
                 vec.push(point.clone());
                 next = point.bottom(self.get_props().color)
             } else {
-                if s.piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color {
+                if s.props().color != self.get_props().color {
                     vec.push(point.clone());
                 }
                 next = None
@@ -120,7 +120,7 @@ pub trait Piece {
                 vec.push(point.clone());
                 next = point.bottom_right(self.get_props().color)
             } else {
-                if s.piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color {
+                if s.props().color != self.get_props().color {
                     vec.push(point.clone());
                 }
                 next = None
@@ -137,7 +137,7 @@ pub trait Piece {
                 vec.push(point.clone());
                 next = point.left(self.get_props().color)
             } else {
-                if s.piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color {
+                if s.props().color != self.get_props().color {
                     vec.push(point.clone());
                 }
                 next = None
@@ -154,7 +154,7 @@ pub trait Piece {
                 vec.push(point.clone());
                 next = point.right(self.get_props().color)
             } else {
-                if s.piece.borrow().as_ref().unwrap().get_props().color != self.get_props().color {
+                if s.props().color != self.get_props().color {
                     vec.push(point.clone());
                 }
                 next = None
@@ -427,7 +427,7 @@ impl Piece for King {
             .flat_map(|x| x.iter())
             .find(|x| {
                 x.piece.borrow().is_some()
-                    && x.piece.borrow().as_ref().unwrap().get_props().id == self.id
+                    && x.props().id == self.id
             })
             .unwrap()
     }
@@ -448,7 +448,7 @@ impl Piece for King {
             if x.is_some() {
                 let s = self.board.get_square(&x.unwrap().notation()).unwrap();
                 if s.piece.borrow().is_some()
-                    && s.piece.borrow().as_ref().unwrap().get_props().color != self.color
+                    && s.props().color != self.color
                 {
                     x.clone()
                 } else if s.piece.borrow().is_none() {
@@ -544,7 +544,7 @@ impl Piece for Queen {
             .flat_map(|x| x.iter())
             .find(|x| {
                 x.piece.borrow().is_some()
-                    && x.piece.borrow().as_ref().unwrap().get_props().id == self.id
+                    && x.props().id == self.id
             })
             .unwrap()
     }
@@ -638,7 +638,7 @@ impl Piece for Rook {
             .flat_map(|x| x.iter())
             .find(|x| {
                 x.piece.borrow().is_some()
-                    && x.piece.borrow().as_ref().unwrap().get_props().id == self.id
+                    && x.props().id == self.id
             })
             .unwrap()
     }
@@ -720,7 +720,7 @@ impl Piece for Bishop {
             .flat_map(|x| x.iter())
             .find(|x| {
                 x.piece.borrow().is_some()
-                    && x.piece.borrow().as_ref().unwrap().get_props().id == self.id
+                    && x.props().id == self.id
             })
             .unwrap()
     }
@@ -802,7 +802,7 @@ impl Piece for Knight {
             .flat_map(|x| x.iter())
             .find(|x| {
                 x.piece.borrow().is_some()
-                    && x.piece.borrow().as_ref().unwrap().get_props().id == self.id
+                    && x.props().id == self.id
             })
             .unwrap()
     }
@@ -824,7 +824,7 @@ impl Piece for Knight {
             if x.is_some() {
                 let s = self.board.get_square(&x.unwrap().notation()).unwrap();
                 if s.piece.borrow().is_some()
-                    && s.piece.borrow().as_ref().unwrap().get_props().color != self.color
+                    && s.props().color != self.color
                 {
                     x.clone()
                 } else if s.piece.borrow().is_none() {
@@ -896,7 +896,7 @@ impl Piece for Pawn {
             .flat_map(|x| x.iter())
             .find(|x| {
                 x.piece.borrow().is_some()
-                    && x.piece.borrow().as_ref().unwrap().get_props().id == self.id
+                    && x.props().id == self.id
             })
             .unwrap()
     }
@@ -908,7 +908,7 @@ impl Piece for Pawn {
             if let Some(point) = p {
                 let s = self.board.get_square(&point.notation()).unwrap();
                 if s.piece.borrow().is_some()
-                    && s.piece.borrow().as_ref().unwrap().get_props().color
+                    && s.props().color
                         != self.get_props().color
                 {
                     vec.push(point.clone());

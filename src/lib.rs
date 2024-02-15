@@ -201,4 +201,19 @@ impl Square{
     pub fn new(piece:RefCell<Option<Box<dyn Piece>>>,point:Point)->Square{
         Square { piece, point }
     }
+    pub fn moves(&self)->Vec<Point>{
+        self.piece.borrow().as_ref().unwrap().moves()
+    }
+    pub fn particular_moves(&self)->Vec<Point>{
+        self.piece.borrow().as_ref().unwrap().particular_moves()
+    }
+    pub fn is_some(&self)->bool{
+        self.piece.borrow().as_ref().is_some()
+    }
+    pub fn is_none(&self)->bool{
+        self.piece.borrow().as_ref().is_none()
+    }
+    pub fn props(&self)->Props{
+        self.piece.borrow().as_ref().unwrap().get_props()
+    }
 }

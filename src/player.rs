@@ -18,7 +18,7 @@ impl Player{
             match(src_square){
                 Ok(s)=>{
                     if s.piece.borrow().is_some() {
-                        if s.piece.borrow().as_ref().unwrap().get_props().color == self.color{
+                        if s.props().color == self.color{
                             return s;
                         }else{
                             println!("{} is not your piece",s.point.notation());
@@ -43,7 +43,7 @@ impl Player{
             let dest_square =self.board.get_square(&target);
             match(dest_square){
                 Ok(s)=>{
-                    if s.piece.borrow().is_some() && s.piece.borrow().as_ref().unwrap().get_props().color == self.color{
+                    if s.piece.borrow().is_some() && s.props().color == self.color{
                         println!("{} is your piece",s.point.notation());
                         continue;
                     }
