@@ -24,8 +24,39 @@ fn main() {
         board: Rc::clone(&manager.board),
         color: Color::Black,
     };
+    
+    let mut is_valid=false;
     manager.settting();
-    manager.start(player1, player2);
+
+    manager.draw_board(Color::White);
+
+    let mut moves:Vec<Point> =vec![];
+    let mut src= String::new();
+    let mut dst = String::new();
+    loop{
+        src = String::new();
+        std::io::stdin().read_line(&mut src).expect("failed to readline");
+        moves= match manager.get_possible_moves(Color::White, &src){
+            Ok(x)=>x,
+            Err(e)=> continue,
+        };
+        break;
+    }
+    println!("{:?}",moves);
+    
+    loop{
+        dst = String::new();
+        std::io::stdin().read_line(&mut dst).expect("failed to readline");
+        if !manager.is_valid_move(Color::White, &dst,moves.clone()){
+            continue;
+        }
+        break;
+    }
+    println!("{}",src);
+    println!("{}",dst);
+
+
+    //manager.start(player1, player2);
 }
 
 enum Status {
@@ -277,17 +308,20 @@ impl ChessManager {
     fn is_valid_move(&self,color:Color,selection:&str,moves:Vec<Point>)->bool{
         match self.get_square(color, selection){
             Ok(square)=>{
-                if !moves.contains(&square.point) {
-                    false
-                } else {
-                    true
-                }
+                moves.contains(&square.point)
             },
             Err(e)=> false
         }
     }
 
     fn get_square(&self, color: Color, selection: &str) -> Result<&Square, Box<dyn error::Error>> {
+        let src_square = self.board.get_square(&selection);
+        match src_square {
+            Ok(s) =>  Result::Ok(s),
+            Err(e) => Err(Box::new(e)),
+        }
+    }
+    fn get_piece(&self,color: Color, selection: &str)-> Result<&Square, Box<dyn error::Error>>{
         let src_square = self.board.get_square(&selection);
         match src_square {
             Ok(s) => {
