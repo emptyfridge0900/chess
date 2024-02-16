@@ -1,17 +1,17 @@
-use std::{cell::RefCell, borrow::BorrowMut};
+use std::cell::RefCell;
 
-use crate::{Square, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, Color, Point, Type, Props, error};
+use crate::{Square, piece::Piece, Color, Point, Type, error};
 
 #[derive(Clone,Debug)]
 pub struct Notation {
     pub color:Color,
-    pub mov:u128,
+    pub mov:usize,
     pub name: Type,
     pub src: Point,
     pub dst: Point,
 }
 impl Notation{
-    pub fn new(color:Color,mov:u128,name:Type,src:Point,dst:Point)->Notation{
+    pub fn new(color:Color,mov:usize,name:Type,src:Point,dst:Point)->Notation{
         Notation{
             color,
             mov,

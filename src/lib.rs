@@ -2,6 +2,7 @@ pub mod error;
 pub mod piece;
 pub mod player;
 pub mod board;
+pub mod manager;
 
 use std::cell::RefCell;
 use piece::Piece;

@@ -1,6 +1,6 @@
-use std::{rc::Rc, cell::RefCell, borrow::BorrowMut};
+use std::rc::Rc;
 
-use crate::{Square, piece::{Piece, Rook, Knight, Bishop, King, Queen, Pawn}, Color, Point, Type, board::Board, Props};
+use crate::{Square, Color, board::Board};
 
 pub struct Player{
     pub board:Rc<Board>,
