@@ -41,20 +41,16 @@ fn main() {
             }
             break;
         }
-        println!("{}", src);
-        println!("{}", dst);
         let m = manager.get_square(color, &src).unwrap();
         let n = manager.get_square(color, &dst).unwrap();
         let r = manager.process(color, m, n);
-        let q = manager.convert_notation(r);
 
         if color == Color::White {
-            manager.white_record.borrow_mut().push(q.clone());
-            color = Color::Black;
+            manager.white_record.borrow_mut().push(r.to_string());
         } else {
-            manager.black_record.borrow_mut().push(q.clone());
-            color = Color::White;
+            manager.black_record.borrow_mut().push(r.to_string());
         }
+        color.toggle();
 
         for record in std::iter::zip(
             manager.white_record.borrow().iter(),

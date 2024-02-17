@@ -21,7 +21,7 @@ impl Player{
                         if s.props().color == self.color{
                             return s;
                         }else{
-                            println!("{} is not your piece",s.point.notation());
+                            println!("{} is not your piece",s.point.to_string());
                         }
                     }else{
                         continue;
@@ -44,7 +44,7 @@ impl Player{
             match(dest_square){
                 Ok(s)=>{
                     if s.piece.borrow().is_some() && s.props().color == self.color{
-                        println!("{} is your piece",s.point.notation());
+                        println!("{} is your piece",s.point.to_string());
                         continue;
                     }
                     return s;

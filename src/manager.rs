@@ -1,6 +1,6 @@
 use std::{cell::RefCell, error, rc::Rc};
 
-use crate::{board::{Board, Notation}, error::InvalidateInutError, piece::{Bishop, King, Knight, Pawn, Piece, Queen, Rook}, Color, Point, Square, Type};
+use crate::{board::{Board, Notation, UnderAttack}, error::InvalidateInutError, piece::{Bishop, King, Knight, Pawn, Piece, Queen, Rook}, Color, Point, Square, Type};
 
 
 pub struct ChessManager {
@@ -93,62 +93,7 @@ impl ChessManager {
         }
     }
 
-    pub fn convert_notation(&self, record: Notation) -> String {
-        let n = match record.name {
-            Type::King => 'K',
-            Type::Queen => 'Q',
-            Type::Rook => 'R',
-            Type::Bishop => 'B',
-            Type::Knight => 'N',
-            Type::Pawn => ' ',
-        };
-
-        let pieces = self.board.get_pieces_by_color(record.color);
-        let notation = pieces
-            .iter()
-            .filter(|x| x.props().name == record.name)
-            .map(|x| {
-                let m = x.piece.borrow();
-                let p = m.as_ref().unwrap();
-                if p.get_props().name == record.name && x.point != record.src {
-                    //same piece but different point
-                    let points = p.moves();
-                    if points.contains(&record.dst) {
-                        Some(x.point)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                }
-            })
-            .map(|x| {
-                let notation = if x.is_some() {
-                    let p = x.unwrap();
-                    let mut r = String::new();
-                    if record.src.rank == p.rank {
-                        r.push_str(&record.src.file.to_string());
-                    }
-                    if record.src.file == p.file {
-                        r.push_str(&record.src.rank.to_string());
-                    }
-                    r
-                } else {
-                    String::new()
-                };
-                notation
-            })
-            .reduce(|acc, e| if acc.len() > e.len() { acc } else { e });
-
-        let mut result = record.mov.to_string();
-        result.push('.');
-        result.push(n);
-        if notation.is_some() {
-            result.push_str(&notation.unwrap());
-        }
-        result.push_str(&record.dst.notation());
-        result
-    }
+    
 
     pub fn get_possible_moves(&self, color: Color, selection: &str) -> Result<Vec<Point>, String> {
         match self.get_square(color, selection) {
@@ -194,18 +139,37 @@ impl ChessManager {
 
     pub fn process(&self, color: Color, square: &Square, square2: &Square) -> Notation {
 
-        let record = Notation::new(
-            color,
-            if color == Color::White {
-                self.white_record.borrow().len()+1
-            } else {
-                self.black_record.borrow().len()+1
-            },
-            square.piece.borrow().as_ref().unwrap().get_props().name,
-            square.point,
-            square2.point,
-        );
+        let pieces = self.board.get_pieces_by_color(color);
+        let notation = pieces
+            .into_iter()
+            .filter(|x| {
+                let m = x.piece.borrow();
+                let p = m.as_ref().unwrap();
+                if x.point!=square.point && p.get_props().name == square.piece.borrow().as_ref().unwrap().get_props().name{
+                    //same piece but different point
+                    let mut points = p.moves();
+                    points.extend(p.particular_moves());
+                    points.contains(&square2.point) 
+                }else{
+                    false
+                }
 
+            })
+            .map(|x| {
+                    let p = x.point;
+                    let mut r = String::new();
+                    if square.point.rank == p.rank {
+                        r.push_str(&square.point.file.to_string());
+                    }
+                    if square.point.file == p.file {
+                        r.push_str(&square.point.rank.to_string());
+                    }
+                    r
+            })
+            .reduce(|acc, e| if acc.len() > e.len() { acc } else { e });
+        
+        
+        let mut capture=false;
         if self.is_castling(square, square2) {
             self.castling(square, square2);
         } else if self.is_en_passant(square, square2) {
@@ -213,12 +177,35 @@ impl ChessManager {
         } else {
             let mut piece = self.board.takes(square.point);
             piece = self.board.replace(square2.point, piece);
-
-            //promotion
+            if piece.is_some(){
+                capture=true;
+            }
             if self.is_promotion(square2) {
                 self.promotion(square2)
             }
         }
+        let under = if self.is_check_mate(color.opposite()) {
+            UnderAttack::CheckMate
+        }else if self.is_under_check(color.opposite()){
+                UnderAttack::Check
+        }else{
+            UnderAttack::None
+        };
+
+        let record = Notation::new(
+            if color == Color::White {
+                self.white_record.borrow().len()+1
+            } else {
+                self.black_record.borrow().len()+1
+            },
+            color,
+            square2.piece.borrow().as_ref().unwrap().get_props().name,
+            if notation.is_some(){notation.unwrap()}else{String::new()},
+            square.point,
+            square2.point,
+            capture,
+            under
+        );
         record
     }
 
@@ -254,11 +241,7 @@ impl ChessManager {
             .unwrap();
         let moves = king.piece.borrow().as_ref().unwrap().moves();
 
-        let enimies = self.board.get_pieces_by_color(if color == Color::White {
-            Color::Black
-        } else {
-            Color::White
-        });
+        let enimies = self.board.get_pieces_by_color(color.opposite());
 
         let mut is_king_under_check = false;
         'outer: for s in enimies {

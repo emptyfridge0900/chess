@@ -32,7 +32,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.top_left();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.top_left(self.get_props().color)
@@ -49,7 +49,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.top();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.top(self.get_props().color)
@@ -66,7 +66,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.top_right();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.top_right(self.get_props().color)
@@ -83,7 +83,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.bottom_left();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.bottom_left(self.get_props().color)
@@ -98,7 +98,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.bottom();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.bottom(self.get_props().color)
@@ -115,7 +115,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.bottom_right();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.bottom_right(self.get_props().color)
@@ -132,7 +132,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.left();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.left(self.get_props().color)
@@ -149,7 +149,7 @@ pub trait Piece {
         let mut vec: Vec<Point> = vec![];
         let mut next = self.right();
         while let Some(point) = next {
-            let s = self.board().get_square(&point.notation()).unwrap();
+            let s = self.board().get_square(&point.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(point.clone());
                 next = point.right(self.get_props().color)
@@ -446,7 +446,7 @@ impl Piece for King {
         .iter()
         .filter_map(|x| {
             if x.is_some() {
-                let s = self.board.get_square(&x.unwrap().notation()).unwrap();
+                let s = self.board.get_square(&x.unwrap().to_string()).unwrap();
                 if s.piece.borrow().is_some()
                     && s.props().color != self.color
                 {
@@ -822,7 +822,7 @@ impl Piece for Knight {
         .iter()
         .filter_map(|x| {
             if x.is_some() {
-                let s = self.board.get_square(&x.unwrap().notation()).unwrap();
+                let s = self.board.get_square(&x.unwrap().to_string()).unwrap();
                 if s.piece.borrow().is_some()
                     && s.props().color != self.color
                 {
@@ -906,7 +906,7 @@ impl Piece for Pawn {
 
         for p in vec![self.top_left(), self.top_right()].iter() {
             if let Some(point) = p {
-                let s = self.board.get_square(&point.notation()).unwrap();
+                let s = self.board.get_square(&point.to_string()).unwrap();
                 if s.piece.borrow().is_some()
                     && s.props().color
                         != self.get_props().color
@@ -916,7 +916,7 @@ impl Piece for Pawn {
             }
         }
         if let Some(p) = self.top() {
-            let s = self.board.get_square(&p.notation()).unwrap();
+            let s = self.board.get_square(&p.to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(p);
             }
@@ -929,7 +929,7 @@ impl Piece for Pawn {
         let mut vec: Vec<Point> = vec![];
 
         if !self.is_moved() {
-            let s = self.board.get_square(&self.top_x2().notation()).unwrap();
+            let s = self.board.get_square(&self.top_x2().to_string()).unwrap();
             if s.piece.borrow().is_none() {
                 vec.push(self.top_x2());
             }

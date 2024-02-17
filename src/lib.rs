@@ -13,6 +13,22 @@ pub enum Color {
     White,
     Black
 }
+impl Color{
+    pub fn opposite(self)->Color{
+        if self==Color::White{
+            Color::Black
+        } else{
+            Color::White
+        }
+    }
+    pub fn toggle(&mut self){
+        if *self==Color::White{
+            *self=Color::Black;
+        } else{
+            *self=Color::White;
+        }
+    }
+}
 impl std::fmt::Display for Color{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}",self)
@@ -64,7 +80,7 @@ impl Point{
     pub fn new(file:char,rank:u32)->Point{
         Point{ file,rank }
     }
-    pub fn notation(&self)->String{
+    pub fn to_string(&self)->String{
         format!("{}{}",self.file,self.rank)
     }
     pub fn top(&self,color:Color)->Option<Point>{

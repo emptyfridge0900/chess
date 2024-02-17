@@ -1,25 +1,69 @@
-use std::cell::RefCell;
+use std::{cell::RefCell};
 
 use crate::{Square, piece::Piece, Color, Point, Type, error};
+
+#[derive(Clone,Copy,Debug,PartialEq,Eq)]
+pub enum UnderAttack{
+    None,
+    Check,
+    CheckMate
+}
+impl UnderAttack{
+    pub fn to_char(self)->char{
+        if self == UnderAttack::None{
+            ' '
+        } else if self == UnderAttack::Check{
+            '+'
+        } else {
+            '#'
+        }
+    }
+}
 
 #[derive(Clone,Debug)]
 pub struct Notation {
     pub color:Color,
     pub mov:usize,
     pub name: Type,
+    pub disambiguating:String,
     pub src: Point,
     pub dst: Point,
+    pub capture:bool,
+    pub under:UnderAttack,
 }
 impl Notation{
-    pub fn new(color:Color,mov:usize,name:Type,src:Point,dst:Point)->Notation{
+    pub fn new(mov:usize,color:Color,name:Type,disambiguating:String,src:Point,dst:Point,capture:bool,under:UnderAttack)->Notation{
         Notation{
             color,
             mov,
             name,
+            disambiguating,
             src,
             dst,
+            capture,
+            under
         }
     }
+    pub fn to_string(&self) -> String {
+        let n = match self.name {
+            Type::King => 'K',
+            Type::Queen => 'Q',
+            Type::Rook => 'R',
+            Type::Bishop => 'B',
+            Type::Knight => 'N',
+            Type::Pawn => ' ',
+        };
+       
+        let mut result = self.mov.to_string();
+        result.push('.');
+        result.push(n);
+        result.push_str(&self.disambiguating);
+        result.push(if self.capture{'x'}else{' '});
+        result.push_str(&self.dst.to_string());
+        result.push(self.under.to_char());
+        result.split_ascii_whitespace().collect()
+    }
+
 }
 pub struct Board{
     pub squares:[[Square; 8]; 8],
@@ -122,7 +166,7 @@ impl Board{
     pub fn takes(&self, point:Point)->Option<Box<dyn Piece>>{
         for row in self.squares.iter(){
             for square in row{
-                if point.notation()==square.point.notation(){
+                if point.to_string()==square.point.to_string(){
                     if square.piece.borrow().is_some(){
                         return square.piece.take();
                     }
@@ -135,7 +179,7 @@ impl Board{
     pub fn replace(&self,point:Point,piece: Option<Box<dyn Piece>>)->Option<Box<dyn Piece>>{
         for row in self.squares.iter(){
             for square in row{
-                if point.notation()==square.point.notation(){
+                if point.to_string()==square.point.to_string(){
                     let p = piece.unwrap();
                     p.moved();
                     return square.piece.borrow_mut().replace(p);
@@ -148,7 +192,7 @@ impl Board{
     pub fn get_square(&self, select:&str)->Result<&Square,error::InvalidateInutError>{
         for row in self.squares.iter(){
             for square in row{
-                if select.trim()==square.point.notation(){
+                if select.trim()==square.point.to_string(){
                     return Ok(&square);
                 }
             }
@@ -171,7 +215,7 @@ impl Board{
     }
 
     pub fn points_between(&self,point:Point,point2:Point)->Vec<Point>{
-        let s = self.get_square(&point.notation());
+        let s = self.get_square(&point.to_string());
         match s {
             Ok(square)=>{
                 let piece= square.piece.borrow();
