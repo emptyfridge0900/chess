@@ -3,16 +3,16 @@ use std::{cell::RefCell};
 use crate::{Square, piece::Piece, Color, Point, Type, error};
 
 #[derive(Clone,Copy,Debug,PartialEq,Eq)]
-pub enum UnderAttack{
+pub enum Attack{
     None,
     Check,
     CheckMate
 }
-impl UnderAttack{
+impl Attack{
     pub fn to_char(self)->char{
-        if self == UnderAttack::None{
+        if self == Attack::None{
             ' '
-        } else if self == UnderAttack::Check{
+        } else if self == Attack::Check{
             '+'
         } else {
             '#'
@@ -26,22 +26,22 @@ pub struct Notation {
     pub mov:usize,
     pub name: Type,
     pub disambiguating:String,
-    pub src: Point,
-    pub dst: Point,
+    pub start: Point,
+    pub end: Point,
     pub capture:bool,
-    pub under:UnderAttack,
+    pub attack:Attack,
 }
 impl Notation{
-    pub fn new(mov:usize,color:Color,name:Type,disambiguating:String,src:Point,dst:Point,capture:bool,under:UnderAttack)->Notation{
+    pub fn new(mov:usize,color:Color,name:Type,disambiguating:String,start:Point,end:Point,capture:bool,attack:Attack)->Notation{
         Notation{
             color,
             mov,
             name,
             disambiguating,
-            src,
-            dst,
+            start,
+            end,
             capture,
-            under
+            attack
         }
     }
     pub fn to_string(&self) -> String {
@@ -59,8 +59,8 @@ impl Notation{
         result.push(n);
         result.push_str(&self.disambiguating);
         result.push(if self.capture{'x'}else{' '});
-        result.push_str(&self.dst.to_string());
-        result.push(self.under.to_char());
+        result.push_str(&self.end.to_string());
+        result.push(self.attack.to_char());
         result.split_ascii_whitespace().collect()
     }
 

@@ -940,8 +940,8 @@ impl Piece for Pawn {
             let left = self.square().point.left(self.color);
             if let Some(side) = left{
                 if let Some(last_record) = self.board.record.borrow().last(){
-                    if last_record.src.rank==7 
-                    && last_record.dst==side
+                    if last_record.start.rank==7 
+                    && last_record.end==side
                     && last_record.name== Type::Pawn
                     && last_record.color==Color::Black 
                     {
@@ -953,8 +953,8 @@ impl Piece for Pawn {
             let right = self.square().point.right(self.color);
             if let Some(side) = right{
                 if let Some(last_record) = self.board.record.borrow().last(){
-                    if last_record.src.rank==7 
-                    && last_record.dst==side
+                    if last_record.start.rank==7 
+                    && last_record.end==side
                     && last_record.name== Type::Pawn
                     && last_record.color==Color::Black 
                     {
@@ -969,8 +969,8 @@ impl Piece for Pawn {
             let left = self.square().point.left(self.color);
             if let Some(side) = left{
                 if let Some(last_record) = self.board.record.borrow().last(){
-                    if last_record.src.rank==2 
-                    && last_record.dst==side
+                    if last_record.start.rank==2 
+                    && last_record.end==side
                     && last_record.name== Type::Pawn
                     && last_record.color==Color::White 
                     {
@@ -982,8 +982,8 @@ impl Piece for Pawn {
             let right = self.square().point.right(self.color);
             if let Some(side) = right{
                 if let Some(last_record) = self.board.record.borrow().last(){
-                    if last_record.src.rank==2
-                    && last_record.dst==side
+                    if last_record.start.rank==2
+                    && last_record.end==side
                     && last_record.name== Type::Pawn
                     && last_record.color==Color::White 
                     {

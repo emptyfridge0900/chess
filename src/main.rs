@@ -3,7 +3,9 @@ use chess::{Color, Point};
 fn main() {
     let manager = ChessManager::new();
     manager.settting();
-    let mut color = Color::White;
+    let mut color = Color::White;//1.b4
+    let no =manager.interpret(color, "2.Nc3".to_string());
+    println!("{:?}",no);
     loop {
         manager.draw_board(color);
 

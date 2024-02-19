@@ -1,6 +1,6 @@
 use std::{cell::RefCell, error, rc::Rc};
 
-use crate::{board::{Board, Notation, UnderAttack}, error::InvalidateInutError, piece::{Bishop, King, Knight, Pawn, Piece, Queen, Rook}, Color, Point, Square, Type};
+use crate::{board::{Board, Notation, Attack}, error::InvalidateInutError, piece::{Bishop, King, Knight, Pawn, Piece, Queen, Rook}, Color, Point, Square, Type};
 
 
 pub struct ChessManager {
@@ -168,7 +168,6 @@ impl ChessManager {
             })
             .reduce(|acc, e| if acc.len() > e.len() { acc } else { e });
         
-        
         let mut capture=false;
         if self.is_castling(square, square2) {
             self.castling(square, square2);
@@ -184,12 +183,12 @@ impl ChessManager {
                 self.promotion(square2)
             }
         }
-        let under = if self.is_check_mate(color.opposite()) {
-            UnderAttack::CheckMate
+        let attack = if self.is_check_mate(color.opposite()) {
+            Attack::CheckMate
         }else if self.is_under_check(color.opposite()){
-                UnderAttack::Check
+                Attack::Check
         }else{
-            UnderAttack::None
+            Attack::None
         };
 
         let record = Notation::new(
@@ -204,8 +203,9 @@ impl ChessManager {
             square.point,
             square2.point,
             capture,
-            under
+            attack
         );
+        self.board.add_record(record.clone());
         record
     }
 
@@ -363,4 +363,105 @@ impl ChessManager {
     }
 
     fn replay(&self, white_notations: Vec<String>, black_notations: Vec<String>) {}
+
+    //number.piece (src) (capture) dst (check)
+    //1.b4
+    //3.Kc3
+    //R1a3
+    //Qh4e1
+    pub fn interpret(&self, color:Color, notation:String)->Notation{
+        let split =notation.split('.').collect::<Vec<_>>();
+        let mut capture=false;
+        let mov= usize::from_str_radix(split[0], 10).unwrap();
+        let mut n=split[1];
+
+        //name check
+        let x= n.chars().nth(0).unwrap();
+        let name =
+            if 'K'==x{
+                n=&n[1..];
+                Type::King
+            }else if 'Q'==x{
+                n=&n[1..];
+                Type::Queen
+            }else if 'R'==x{
+                n=&n[1..];
+                Type::Rook
+            }else if 'B'==x{
+                n=&n[1..];
+                Type::Bishop
+            }else if 'N'==x{
+                n=&n[1..];
+                Type::Knight
+            }else{
+                Type::Pawn
+            };
+
+
+        //checkmate check
+        let last = n.chars().last().unwrap();
+        let attack =if last=='+'{
+            n=&n[..n.len()];
+            Attack::Check
+        }else if last=='#'{
+            n=&n[..n.len()];
+            Attack::CheckMate
+        }else{
+            Attack::None
+        };
+
+        //destination point check
+        let dst =&n[n.len()-2..];
+        n=&n[..n.len()-2];
+
+        //capture check
+        if n.chars().last().is_some(){
+            if n.chars().last().unwrap()=='x'{
+                capture=true;                
+                n=&n[..n.len()-1];
+            }
+        };
+
+        let destination= Point::new(dst.as_bytes()[0] as char, (dst.as_bytes()[1]-48) as u32);
+        //source point check
+
+        println!("{:?}",name);
+        let candidates= self.board.get_pieces_by_color(color)
+        .into_iter()
+        .filter(|x|x.props().name==name)
+        .filter(|x|{
+            let mut moves = x.piece.borrow().as_ref().unwrap().moves();
+            print!("{:?}",moves);
+            println!("{:?}",destination);
+            moves.extend(x.piece.borrow().as_ref().unwrap().particular_moves());
+            moves.contains(&destination)
+        })
+        .map(|x|x.point)
+        .collect::<Vec<_>>();
+
+
+        if n.len()==0{
+            println!("{:?}",*candidates.first().unwrap());
+            return Notation::new(mov,Color::White,name,n.to_string(),*candidates.first().unwrap(),destination,capture,attack);
+        }
+        if n.len()==1{
+            if n.chars().last().unwrap().is_numeric(){
+                let rank = n.chars().last().unwrap().to_digit(10).unwrap();
+                let c =candidates.iter().filter(|x|x.rank==rank).collect::<Vec<_>>().first().unwrap().clone();
+                return Notation::new(mov,Color::White,name,n.to_string(),*c,destination,capture,attack);
+            }
+            let file= n.chars().last().unwrap();
+            let c = candidates.iter().filter(|x|x.file==file).collect::<Vec<_>>().first().unwrap().clone();
+            return Notation::new(mov,Color::White,name,n.to_string(),*c,destination,capture,attack);
+        } else if n.len()==2{
+            let file = n.as_bytes()[0] as char;
+            let rank = (n.as_bytes()[1]-48) as u32;
+            let c = candidates.iter().filter(|x|x.file==file && x.rank==rank).collect::<Vec<_>>().first().unwrap().clone();
+            return Notation::new(mov,Color::White,name,n.to_string(),*c,destination,capture,attack);
+        }else{
+            println!("{}",n.len());
+            unreachable!()
+        }
+        //return Notation::new(mov,Color::White,name,n.to_string(),src,destination,capture,under);
+    }
 }
