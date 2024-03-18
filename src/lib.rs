@@ -4,7 +4,7 @@ pub mod player;
 pub mod board;
 pub mod manager;
 
-use std::cell::RefCell;
+use std::{cell::RefCell, ops::{Add, Shl}};
 use piece::Piece;
 
 
@@ -233,4 +233,58 @@ impl Square{
     pub fn props(&self)->Props{
         self.piece.borrow().as_ref().unwrap().get_props()
     }
+}
+
+
+pub enum MoveType{
+    Nomal=0,
+    Promotion=1<<14,
+    EnPassant=2<<14,
+    Castling=3<<14
+}
+
+pub struct Move{
+    pub data:u16
+
+}
+impl Move{
+    pub fn new(){
+
+    }
+    pub fn new1(&self,from:Squre,to:Squre){
+        let x = (from << 6) + to;
+    }
+}
+
+pub enum Squre{
+    SqA1, SqB1, SqC1, SqD1, SqE1, SqF1, SqG1, SqH1,
+    SqA2, SqB2, SqC2, SqD2, SqE2, SqF2, SqG2, SqH2,
+    SqA3, SqB3, SqC3, SqD3, SqE3, SqF3, SqG3, SqH3,
+    SqA4, SqB4, SqC4, SqD4, SqE4, SqF4, SqG4, SqH4,
+    SqA5, SqB5, SqC5, SqD5, SqE5, SqF5, SqG5, SqH5,
+    SqA6, SqB6, SqC6, SqD6, SqE6, SqF6, SqG6, SqH6,
+    SqA7, SqB7, SqC7, SqD7, SqE7, SqF7, SqG7, SqH7,
+    SqA8, SqB8, SqC8, SqD8, SqE8, SqF8, SqG8, SqH8,
+    SqNone,
+
+    //SQUARE_ZERO = 0,
+    //SQUARE_NB   = 64
+}
+
+impl Shl<i32> for Squre{
+    type Output=Self;
+    fn shl(self, rhs:i32) -> Self::Output{
+        let lhs=self;
+        let i =lhs as i32;
+        let x =i<<rhs;
+        let y:Squre=x;
+    }
+}
+impl Add<Squre> for Squre{
+    type Output=Self;
+
+    fn add(self, rhs: Squre) -> Self::Output {
+        self+rhs
+    }
+    
 }
